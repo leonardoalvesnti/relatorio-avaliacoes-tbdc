@@ -1,0 +1,616 @@
+{
+  "name": "Evaluation TBDC v3 - Relatório Completo",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -900,
+        400
+      ],
+      "id": "c2aa837b-9431-460d-9edb-bd99fd52d2c7",
+      "name": "When clicking 'Execute workflow'"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1,
+                4
+              ],
+              "triggerAtHour": 8,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -900,
+        600
+      ],
+      "id": "91537ad6-9283-4dc7-ac57-b23f51df40ba",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://n8n.tbdc.com.br/webhook/v1/gd/competition/competition",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "cropseasonid",
+              "value": "3550"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -640,
+        400
+      ],
+      "id": "node-get-competitions",
+      "name": "1 GET Competitions",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "hcdGkfTo2hUj7Duy",
+          "name": "TBDC"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nconst items = $input.all();\nlet competitions = [];\nfor (const item of items) {\n  const j = item.json;\n  if (Array.isArray(j)) competitions = competitions.concat(j);\n  else if (j.competitionId) competitions.push(j);\n  else { for (const k of Object.keys(j)) { if (Array.isArray(j[k])) { competitions = competitions.concat(j[k]); break; } } }\n}\nstaticData.competitions = JSON.stringify(competitions);\nreturn [{json: {step: '1_competitions', count: competitions.length}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        400
+      ],
+      "id": "node-store-competitions",
+      "name": "2 Store Competitions"
+    },
+    {
+      "parameters": {
+        "url": "https://api-external.tbdc.com.br/v1/fazenda",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "pagination_limit",
+              "value": "500"
+            },
+            {
+              "name": "pagination_page",
+              "value": "1"
+            },
+            {
+              "name": "sort",
+              "value": "id_fazenda"
+            },
+            {
+              "name": "order",
+              "value": "desc"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -160,
+        400
+      ],
+      "id": "node-get-fazendas",
+      "name": "3 GET Fazendas",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CRIAR_CREDENTIAL_BEARER",
+          "name": "TBDC Bearer Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nconst items = $input.all();\nlet fazendas = [];\nfor (const item of items) {\n  const j = item.json;\n  if (j.data && j.data.rows) fazendas = fazendas.concat(j.data.rows);\n  else if (j.id_fazenda) fazendas.push(j);\n  else if (Array.isArray(j)) fazendas = fazendas.concat(j);\n}\nstaticData.fazendas = JSON.stringify(fazendas);\nreturn [{json: {step: '2_fazendas', count: fazendas.length}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        400
+      ],
+      "id": "node-store-fazendas",
+      "name": "4 Store Fazendas"
+    },
+    {
+      "parameters": {
+        "url": "https://api-external.tbdc.com.br/v1/variedade",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "pagination_limit",
+              "value": "500"
+            },
+            {
+              "name": "pagination_page",
+              "value": "1"
+            },
+            {
+              "name": "sort",
+              "value": "id_variedade"
+            },
+            {
+              "name": "order",
+              "value": "desc"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        320,
+        400
+      ],
+      "id": "node-get-variedades",
+      "name": "5 GET Variedades",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CRIAR_CREDENTIAL_BEARER",
+          "name": "TBDC Bearer Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nconst items = $input.all();\nlet variedades = [];\nfor (const item of items) {\n  const j = item.json;\n  if (j.data && j.data.rows) variedades = variedades.concat(j.data.rows);\n  else if (j.id_variedade) variedades.push(j);\n  else if (Array.isArray(j)) variedades = variedades.concat(j);\n}\nstaticData.variedades = JSON.stringify(variedades);\nreturn [{json: {step: '3_variedades', count: variedades.length}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        400
+      ],
+      "id": "node-store-variedades",
+      "name": "6 Store Variedades"
+    },
+    {
+      "parameters": {
+        "url": "https://n8n.tbdc.com.br/webhook/v1/gd/competition/evaluation",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "cropseasonid",
+              "value": "3550"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        800,
+        400
+      ],
+      "id": "node-get-evaluations",
+      "name": "7 GET Evaluations",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "hcdGkfTo2hUj7Duy",
+          "name": "TBDC"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nconst items = $input.all();\nlet evaluations = [];\nfor (const item of items) {\n  const j = item.json;\n  if (Array.isArray(j)) evaluations = evaluations.concat(j);\n  else if (j.evaluationId !== undefined) evaluations.push(j);\n  else { for (const k of Object.keys(j)) { if (Array.isArray(j[k])) { evaluations = evaluations.concat(j[k]); break; } } }\n}\nstaticData.evaluations = JSON.stringify(evaluations);\nreturn [{json: {step: '4_evaluations', count: evaluations.length}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        400
+      ],
+      "id": "node-store-evaluations",
+      "name": "8 Store Evaluations"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ================================================================\n// RELATÓRIO COMPLETO TBDC v3.5 - GEOCODIFICAÇÃO AUTOMÁTICA\n//\n// Território: mapeamento estático (197 fazendas)\n// Cidade/Estado: geocodificação por centróide de 1.530 municípios\n// Coordenadas: extraídas de evaluation.data[].media[].point\n// ================================================================\n\nconst staticData = $getWorkflowStaticData('global');\n\nlet competitions = [], fazendas = [], variedades = [], evaluations = [];\ntry { competitions = JSON.parse(staticData.competitions || '[]'); } catch(e) {}\ntry { fazendas = JSON.parse(staticData.fazendas || '[]'); } catch(e) {}\ntry { variedades = JSON.parse(staticData.variedades || '[]'); } catch(e) {}\ntry { evaluations = JSON.parse(staticData.evaluations || '[]'); } catch(e) {}\n\n// === MUNICÍPIOS DO BRASIL (1.530 centróides) ===\n// Formato: [latitude, longitude, \"Nome\", \"UF\"]\nconst MUNIS = [[-16.7573,-49.4412,\"Abadia de Goiás\",\"GO\"],[-18.4831,-47.3916,\"Abadia dos Dourados\",\"MG\"],[-16.197,-48.7057,\"Abadiânia\",\"GO\"],[-19.1551,-45.4444,\"Abaeté\",\"MG\"],[-1.7218,-48.8788,\"Abaetetuba\",\"PA\"],[-13.2488,-41.6619,\"Abaíra\",\"BA\"],[-4.9533,-48.3933,\"Abel Figueiredo\",\"PA\"],[-9.621,-49.1518,\"Abreulândia\",\"TO\"],[-4.9471,-47.5004,\"Açailândia\",\"MA\"],[-1.9538,-48.1985,\"Acará\",\"PA\"],[-8.2195,-41.0831,\"Acauã\",\"PI\"],[-15.194,-56.3632,\"Acorizal\",\"MT\"],[-17.396,-50.3749,\"Acreúna\",\"GO\"],[-19.0671,-42.5419,\"Açucena\",\"MG\"],[-16.4127,-50.1657,\"Adelândia\",\"GO\"],[-4.1363,-43.3275,\"Afonso Cunha\",\"MA\"],[-8.5114,-41.0095,\"Afrânio\",\"PE\"],[-5.7968,-42.6664,\"Agricolândia\",\"PI\"],[-6.7905,-50.4791,\"Água Azul do Norte\",\"PA\"],[-17.9914,-42.3806,\"Água Boa\",\"MG\"],[-14.051,-52.1601,\"Água Boa\",\"MT\"],[-5.8886,-42.637,\"Água Branca\",\"PI\"],[-2.8405,-42.1189,\"Água Doce do Maranhão\",\"MA\"],[-14.9778,-47.7823,\"Água Fria de Goiás\",\"GO\"],[-18.0771,-48.7603,\"Água Limpa\",\"GO\"],[-15.7617,-48.2816,\"Águas Lindas de Goiás\",\"GO\"],[-15.7431,-41.4571,\"Águas Vermelhas\",\"MG\"],[-6.5541,-47.4702,\"Aguiarnópolis\",\"TO\"],[-2.3957,-44.4062,\"Alcântara\",\"MA\"],[-18.3255,-53.7042,\"Alcinópolis\",\"MS\"],[-4.6262,-43.4689,\"Aldeias Altas\",\"MA\"],[-1.9462,-54.7384,\"Alenquer\",\"PA\"],[-16.0834,-48.5076,\"Alexânia\",\"GO\"],[-11.3056,-48.9361,\"Aliança do Tocantins\",\"TO\"],[-11.5706,-47.1792,\"Almas\",\"TO\"],[-1.529,-52.5788,\"Almeirim\",\"PA\"],[-17.7292,-49.4769,\"Aloândia\",\"GO\"],[-18.974,-41.97,\"Alpercata\",\"MG\"],[-9.8667,-56.0867,\"Alta Floresta\",\"MT\"],[-3.2041,-52.21,\"Altamira\",\"PA\"],[-4.166,-45.4706,\"Altamira do Maranhão\",\"MA\"],[-4.213,-44.446,\"Alto Alegre do Maranhão\",\"MA\"],[-3.6669,-45.8421,\"Alto Alegre do Pindaré\",\"MA\"],[-17.3153,-53.2181,\"Alto Araguaia\",\"MT\"],[-11.6732,-51.3883,\"Alto Boa Vista\",\"MT\"],[-16.9462,-53.5272,\"Alto Garças\",\"MT\"],[-14.1978,-49.3378,\"Alto Horizonte\",\"GO\"],[-5.2563,-42.2096,\"Alto Longá\",\"PI\"],[-14.5137,-56.4776,\"Alto Paraguai\",\"MT\"],[-14.1305,-47.51,\"Alto Paraíso de Goiás\",\"GO\"],[-9.1027,-45.9303,\"Alto Parnaíba\",\"MA\"],[-19.0618,-41.0209,\"Alto Rio Novo\",\"ES\"],[-17.8241,-53.2792,\"Alto Taquari\",\"MT\"],[-5.0389,-42.4612,\"Altos\",\"PI\"],[-19.4174,-41.7317,\"Alvarenga\",\"MG\"],[-12.4785,-49.1249,\"Alvorada\",\"TO\"],[-18.7334,-43.3638,\"Alvorada de Minas\",\"MG\"],[-8.4242,-43.777,\"Alvorada do Gurguéia\",\"PI\"],[-14.4797,-46.491,\"Alvorada do Norte\",\"GO\"],[-1.6752,-46.0024,\"Amapá do Maranhão\",\"MA\"],[-13.9236,-49.2962,\"Amaralina\",\"GO\"],[-6.243,-42.8433,\"Amarante\",\"PI\"],[-5.5691,-46.7473,\"Amarante do Maranhão\",\"MA\"],[-11.4429,-41.439,\"América Dourada\",\"BA\"],[-16.2514,-49.9831,\"Americano do Brasil\",\"GO\"],[-16.6151,-51.0919,\"Amorinópolis\",\"GO\"],[-14.6151,-41.1356,\"Anagé\",\"BA\"],[-0.9968,-49.9354,\"Anajás\",\"PA\"],[-3.2627,-44.6126,\"Anajatuba\",\"MA\"],[-6.3644,-48.0735,\"Ananás\",\"TO\"],[-1.3639,-48.3743,\"Ananindeua\",\"PA\"],[-16.3281,-48.953,\"Anápolis\",\"GO\"],[-3.4699,-51.2003,\"Anapu\",\"PA\"],[-3.6758,-43.1014,\"Anapurus\",\"MA\"],[-12.8049,-41.3297,\"Andaraí\",\"BA\"],[-17.7279,-42.2641,\"Angelândia\",\"MG\"],[-12.0063,-44.7003,\"Angical\",\"BA\"],[-6.0879,-42.74,\"Angical do Piauí\",\"PI\"],[-6.3918,-47.8611,\"Angico\",\"TO\"],[-18.3339,-48.2204,\"Anhanguera\",\"GO\"],[-16.4642,-49.9617,\"Anicuns\",\"GO\"],[-9.1856,-43.0494,\"Anísio de Abreu\",\"PI\"],[-7.2128,-44.1889,\"Antônio Almeida\",\"PI\"],[-16.8198,-49.2469,\"Aparecida de Goiânia\",\"GO\"],[-18.2941,-51.1516,\"Aparecida do Rio Doce\",\"GO\"],[-9.9414,-47.9638,\"Aparecida do Rio Negro\",\"TO\"],[-1.4586,-45.0864,\"Apicum-Açu\",\"MA\"],[-18.9607,-51.9232,\"Aporé\",\"GO\"],[-19.1955,-44.2493,\"Araçaí\",\"MG\"],[-14.428,-41.4648,\"Aracatu\",\"BA\"],[-16.3563,-49.6804,\"Araçu\",\"GO\"],[-16.8523,-42.0637,\"Araçuaí\",\"MG\"],[-15.8955,-52.2372,\"Aragarças\",\"GO\"],[-16.9087,-49.4476,\"Aragoiânia\",\"GO\"],[-7.1601,-48.5291,\"Aragominas\",\"TO\"],[-8.8076,-49.5569,\"Araguacema\",\"TO\"],[-12.9289,-49.8231,\"Araguaçu\",\"TO\"],[-15.7291,-51.8341,\"Araguaiana\",\"MT\"],[-7.1924,-48.2044,\"Araguaína\",\"TO\"],[-16.857,-53.0318,\"Araguainha\",\"MT\"],[-6.5823,-48.6395,\"Araguanã\",\"TO\"],[-2.9464,-45.6589,\"Araguanã\",\"MA\"],[-15.0909,-50.6315,\"Araguapaz\",\"GO\"],[-18.6456,-48.1934,\"Araguari\",\"MG\"],[-5.6466,-48.1232,\"Araguatins\",\"TO\"],[-2.8909,-41.905,\"Araioses\",\"MA\"],[-4.8835,-46.0032,\"Arame\",\"MA\"],[-7.6546,-49.0637,\"Arapoema\",\"TO\"],[-18.4357,-49.1847,\"Araporã\",\"MG\"],[-19.0268,-46.1484,\"Arapuá\",\"MG\"],[-3.4521,-44.7665,\"Arari\",\"MA\"],[-14.4472,-56.8437,\"Arenápolis\",\"MT\"],[-16.3837,-51.5563,\"Arenópolis\",\"GO\"],[-17.8666,-42.5533,\"Aricanduva\",\"MG\"],[-15.9187,-46.1043,\"Arinos\",\"MG\"],[-6.1102,-41.7822,\"Aroazes\",\"PI\"],[-7.245,-41.5325,\"Aroeiras do Itaim\",\"PI\"],[-6.6508,-42.5418,\"Arraial\",\"PI\"],[-12.9287,-46.9359,\"Arraias\",\"TO\"],[-14.9166,-51.075,\"Aruanã\",\"GO\"],[-5.865,-41.0389,\"Assunção do Piauí\",\"PI\"],[-18.0438,-41.1149,\"Ataléia\",\"MG\"],[-5.4686,-47.8863,\"Augustinópolis\",\"TO\"],[-1.0511,-46.6147,\"Augusto Corrêa\",\"PA\"],[-18.0997,-44.2655,\"Augusto de Lima\",\"MG\"],[-16.6773,-50.4641,\"Aurilândia\",\"GO\"],[-2.149,-47.5677,\"Aurora do Pará\",\"PA\"],[-12.7105,-46.4076,\"Aurora do Tocantins\",\"TO\"],[-3.6084,-55.3199,\"Aveiro\",\"PA\"],[-10.1345,-43.9563,\"Avelino Lopes\",\"PI\"],[-16.4672,-49.7579,\"Avelinópolis\",\"GO\"],[-2.8394,-44.062,\"Axixá\",\"MA\"],[-5.6128,-47.7701,\"Axixá do Tocantins\",\"TO\"],[-7.2092,-47.7613,\"Babaçulândia\",\"TO\"],[-4.2245,-44.7832,\"Bacabal\",\"MA\"],[-2.9645,-44.3164,\"Bacabeira\",\"MA\"],[-1.6965,-45.1328,\"Bacuri\",\"MA\"],[-2.71,-44.7329,\"Bacurituba\",\"MA\"],[-1.9006,-50.1987,\"Bagre\",\"PA\"],[-12.3016,-44.5388,\"Baianópolis\",\"BA\"],[-2.7902,-49.6694,\"Baião\",\"PA\"],[-7.849,-45.219,\"Baixa Grande do Ribeiro\",\"PI\"],[-19.2832,-43.9613,\"Baldim\",\"MG\"],[-16.1966,-52.5393,\"Baliza\",\"GO\"],[-7.5321,-46.0372,\"Balsas\",\"MA\"],[-7.7561,-48.5836,\"Bandeirantes do Tocantins\",\"TO\"],[-7.3478,-50.3959,\"Bannach\",\"PA\"],[-6.7446,-43.0261,\"Barão de Grajaú\",\"MA\"],[-16.2067,-55.9623,\"Barão de Melgaço\",\"MT\"],[-1.5119,-48.6195,\"Barcarena\",\"PA\"],[-11.0859,-43.1459,\"Barra\",\"BA\"],[-6.5164,-42.1146,\"Barra D'Alcântara\",\"PI\"],[-13.6237,-41.3347,\"Barra da Estiva\",\"BA\"],[-5.4968,-45.2485,\"Barra do Corda\",\"MA\"],[-15.8804,-52.264,\"Barra do Garças\",\"MT\"],[-11.81,-42.059,\"Barra do Mendes\",\"BA\"],[-7.6959,-47.6776,\"Barra do Ouro\",\"TO\"],[-4.2447,-42.2922,\"Barras\",\"PI\"],[-12.1439,-44.9968,\"Barreiras\",\"BA\"],[-9.9296,-45.4702,\"Barreiras do Piauí\",\"PI\"],[-2.7586,-42.8232,\"Barreirinhas\",\"MA\"],[-11.7605,-41.9054,\"Barro Alto\",\"BA\"],[-14.9658,-48.9086,\"Barro Alto\",\"GO\"],[-5.8167,-42.5147,\"Barro Duro\",\"PI\"],[-9.834,-48.7252,\"Barrolândia\",\"TO\"],[-3.0205,-41.1358,\"Barroquinha\",\"CE\"],[-4.0223,-42.0787,\"Batalha\",\"PI\"],[-16.9693,-48.9513,\"Bela Vista de Goiás\",\"GO\"],[-3.7262,-45.3075,\"Bela Vista do Maranhão\",\"MA\"],[-7.9881,-41.8675,\"Bela Vista do Piauí\",\"PI\"],[-3.1549,-43.5122,\"Belágua\",\"MA\"],[-1.4554,-48.4898,\"Belém\",\"PA\"],[-15.0334,-41.2652,\"Belo Campo\",\"BA\"],[-19.2199,-42.4828,\"Belo Oriente\",\"MG\"],[-2.6361,-54.9374,\"Belterra\",\"PA\"],[-5.4568,-42.3638,\"Beneditinos\",\"PI\"],[-7.2104,-44.5577,\"Benedito Leite\",\"MA\"],[-1.3618,-48.2434,\"Benevides\",\"PA\"],[-2.4416,-44.7842,\"Bequimão\",\"MA\"],[-16.9567,-42.4606,\"Berilo\",\"MG\"],[-15.61,-41.7432,\"Berizal\",\"MG\"],[-4.6267,-44.7608,\"Bernardo do Mearim\",\"MA\"],[-7.8748,-48.8893,\"Bernardo Sayão\",\"TO\"],[-7.6334,-43.9498,\"Bertolínia\",\"PI\"],[-18.7754,-45.4974,\"Biquinhas\",\"MG\"],[-4.414,-42.1357,\"Boa Hora\",\"PI\"],[-1.7761,-46.3002,\"Boa Vista do Gurupi\",\"MA\"],[-6.9412,-41.3168,\"Bocaina\",\"PI\"],[-17.1135,-43.8104,\"Bocaiúva\",\"MG\"],[-3.5413,-45.606,\"Bom Jardim\",\"MA\"],[-16.2063,-52.1728,\"Bom Jardim de Goiás\",\"GO\"],[-9.0712,-44.359,\"Bom Jesus\",\"PI\"],[-13.2506,-43.4108,\"Bom Jesus da Lapa\",\"BA\"],[-4.4764,-46.8641,\"Bom Jesus das Selvas\",\"MA\"],[-18.2173,-49.74,\"Bom Jesus de Goiás\",\"GO\"],[-12.1706,-51.5032,\"Bom Jesus do Araguaia\",\"MT\"],[-5.0424,-48.6047,\"Bom Jesus do Tocantins\",\"PA\"],[-8.9631,-48.165,\"Bom Jesus do Tocantins\",\"TO\"],[-4.3731,-45.0326,\"Bom Lugar\",\"MA\"],[-3.1963,-41.6403,\"Bom Princípio do Piauí\",\"PI\"],[-9.1605,-42.8865,\"Bonfim do Piauí\",\"PI\"],[-16.6173,-48.9616,\"Bonfinópolis\",\"GO\"],[-16.568,-45.9839,\"Bonfinópolis de Minas\",\"MG\"],[-12.7069,-41.8286,\"Boninal\",\"BA\"],[-11.9668,-41.2647,\"Bonito\",\"BA\"],[-1.3675,-47.3066,\"Bonito\",\"PA\"],[-15.3231,-44.7543,\"Bonito de Minas\",\"MG\"],[-13.6329,-49.8106,\"Bonópolis\",\"GO\"],[-4.4818,-42.1212,\"Boqueirão do Piauí\",\"PI\"],[-12.8205,-42.7324,\"Boquira\",\"BA\"],[-16.8657,-43.0086,\"Botumirim\",\"MG\"],[-13.3772,-42.5163,\"Botuporã\",\"BA\"],[-1.0613,-46.7826,\"Bragança\",\"PA\"],[-3.2979,-52.534,\"Brasil Novo\",\"PA\"],[-16.9999,-46.0081,\"Brasilândia de Minas\",\"MG\"],[-8.3892,-48.4822,\"Brasilândia do Tocantins\",\"TO\"],[-4.1337,-41.7859,\"Brasileira\",\"PI\"],[-15.7795,-47.9297,\"Brasília\",\"DF\"],[-16.2104,-44.4299,\"Brasília de Minas\",\"MG\"],[-19.0562,-42.7099,\"Braúnas\",\"MG\"],[-16.4281,-49.3863,\"Brazabrantes\",\"GO\"],[-11.0058,-48.5683,\"Brejinho de Nazaré\",\"TO\"],[-3.678,-42.7527,\"Brejo\",\"MA\"],[-4.334,-45.581,\"Brejo de Areia\",\"MA\"],[-8.2031,-42.8229,\"Brejo do Piauí\",\"PI\"],[-5.6982,-48.4103,\"Brejo Grande do Araguaia\",\"PA\"],[-12.4815,-43.9679,\"Brejolândia\",\"BA\"],[-3.7719,-49.5735,\"Breu Branco\",\"PA\"],[-1.6804,-50.4791,\"Breves\",\"PA\"],[-15.2428,-51.1602,\"Britânia\",\"GO\"],[-11.9915,-42.6326,\"Brotas de Macaúbas\",\"BA\"],[-14.2021,-41.6696,\"Brumado\",\"BA\"],[-17.8744,-44.1775,\"Buenópolis\",\"MG\"],[-19.4231,-42.2552,\"Bugre\",\"MG\"],[-1.5176,-48.0381,\"Bujaru\",\"PA\"],[-3.9417,-42.9179,\"Buriti\",\"MA\"],[-18.1378,-49.0404,\"Buriti Alegre\",\"GO\"],[-5.8324,-43.8353,\"Buriti Bravo\",\"MA\"],[-16.1792,-50.4302,\"Buriti de Goiás\",\"GO\"],[-5.3145,-48.2271,\"Buriti do Tocantins\",\"TO\"],[-3.1826,-41.8695,\"Buriti dos Lopes\",\"PI\"],[-5.3058,-41.0933,\"Buriti dos Montes\",\"PI\"],[-4.3238,-46.4409,\"Buriticupu\",\"MA\"],[-14.4772,-46.4076,\"Buritinópolis\",\"GO\"],[-10.7171,-43.6302,\"Buritirama\",\"BA\"],[-5.5982,-47.0131,\"Buritirana\",\"MA\"],[-15.6218,-46.4221,\"Buritis\",\"MG\"],[-17.3656,-44.9606,\"Buritizeiro\",\"MG\"],[-16.0335,-47.0862,\"Cabeceira Grande\",\"MG\"],[-15.7995,-46.9265,\"Cabeceiras\",\"GO\"],[-4.4773,-42.3069,\"Cabeceiras do Piauí\",\"PI\"],[-18.7618,-50.9432,\"Cachoeira Alta\",\"GO\"],[-16.6635,-50.646,\"Cachoeira de Goiás\",\"GO\"],[-15.9688,-41.4948,\"Cachoeira de Pajeú\",\"MG\"],[-1.0123,-48.9503,\"Cachoeira do Arari\",\"PA\"],[-1.7597,-46.5459,\"Cachoeira do Piriá\",\"PA\"],[-18.4859,-49.4766,\"Cachoeira Dourada\",\"GO\"],[-18.5161,-49.5039,\"Cachoeira Dourada\",\"MG\"],[-2.9307,-44.0528,\"Cachoeira Grande\",\"MA\"],[-6.1156,-47.9234,\"Cachoeirinha\",\"TO\"],[-18.5594,-51.1328,\"Caçu\",\"GO\"],[-14.5003,-42.2229,\"Caculé\",\"BA\"],[-19.2971,-44.4189,\"Caetanópolis\",\"MG\"],[-14.0684,-42.4861,\"Caetité\",\"BA\"],[-11.6914,-41.4688,\"Cafarnaum\",\"BA\"],[-16.9539,-51.8091,\"Caiapônia\",\"GO\"],[-2.8733,-44.6741,\"Cajapió\",\"MA\"],[-3.3274,-45.0145,\"Cajari\",\"MA\"],[-6.7967,-42.3903,\"Cajazeiras do Piauí\",\"PI\"],[-2.9311,-41.3408,\"Cajueiro da Praia\",\"PI\"],[-17.7441,-48.6246,\"Caldas Novas\",\"GO\"],[-16.7117,-49.0013,\"Caldazinha\",\"GO\"],[-2.2429,-49.4979,\"Cametá\",\"PA\"],[-18.2427,-41.7355,\"Campanário\",\"MG\"],[-16.7624,-49.695,\"Campestre de Goiás\",\"GO\"],[-6.1707,-47.3625,\"Campestre do Maranhão\",\"MA\"],[-13.787,-48.5704,\"Campinaçu\",\"GO\"],[-14.5162,-52.893,\"Campinápolis\",\"MT\"],[-7.6593,-41.8775,\"Campinas do Piauí\",\"PI\"],[-14.3137,-49.1511,\"Campinorte\",\"GO\"],[-17.6363,-47.7768,\"Campo Alegre de Goiás\",\"GO\"],[-9.5222,-43.0126,\"Campo Alegre de Lourdes\",\"BA\"],[-8.3824,-41.8344,\"Campo Alegre do Fidalgo\",\"PI\"],[-16.5028,-44.8096,\"Campo Azul\",\"MG\"],[-7.1283,-41.0315,\"Campo Grande do Piauí\",\"PI\"],[-3.8044,-42.64,\"Campo Largo do Piauí\",\"PI\"],[-16.2971,-49.0895,\"Campo Limpo de Goiás\",\"GO\"],[-4.8217,-42.1641,\"Campo Maior\",\"PI\"],[-15.545,-55.1626,\"Campo Verde\",\"MT\"],[-13.035,-46.7681,\"Campos Belos\",\"GO\"],[-7.9896,-46.8645,\"Campos Lindos\",\"TO\"],[-14.2442,-49.6528,\"Campos Verdes\",\"GO\"],[-6.4966,-49.8776,\"Canaã dos Carajás\",\"PA\"],[-11.0556,-51.8209,\"Canabrava do Norte\",\"MT\"],[-13.0725,-44.201,\"Canápolis\",\"BA\"],[-18.7212,-49.2035,\"Canápolis\",\"MG\"],[-11.6858,-41.7677,\"Canarana\",\"BA\"],[-13.5515,-52.2705,\"Canarana\",\"MT\"],[-7.6882,-43.7233,\"Canavieira\",\"PI\"],[-14.4097,-42.8667,\"Candiba\",\"BA\"],[-1.4326,-45.7161,\"Cândido Mendes\",\"MA\"],[-15.4993,-41.2414,\"Cândido Sales\",\"BA\"],[-18.5248,-42.6223,\"Cantagalo\",\"MG\"],[-3.6376,-44.383,\"Cantanhede\",\"MA\"],[-8.1111,-42.9517,\"Canto do Buriti\",\"PI\"],[-1.2053,-47.1778,\"Capanema\",\"PA\"],[-17.6888,-42.5147,\"Capelinha\",\"MG\"],[-18.6862,-49.5706,\"Capinópolis\",\"MG\"],[-4.7236,-44.328,\"Capinzal do Norte\",\"MA\"],[-19.0748,-41.8614,\"Capitão Andrade\",\"MG\"],[-4.457,-41.944,\"Capitão de Campos\",\"PI\"],[-16.3265,-43.7084,\"Capitão Enéas\",\"MG\"],[-8.4965,-41.814,\"Capitão Gervásio Oliveira\",\"PI\"],[-1.7478,-47.0629,\"Capitão Poço\",\"PA\"],[-9.2793,-43.329,\"Caracol\",\"PI\"],[-17.1862,-41.7004,\"Caraí\",\"MG\"],[-14.7177,-41.2603,\"Caraíbas\",\"BA\"],[-3.4752,-41.8425,\"Caraúbas do Piauí\",\"PI\"],[-17.5255,-43.0137,\"Carbonita\",\"MG\"],[-14.2985,-43.7724,\"Carinhanha\",\"BA\"],[-11.8881,-49.1609,\"Cariri do Tocantins\",\"TO\"],[-9.9491,-55.8417,\"Carlinda\",\"MT\"],[-19.0877,-43.1382,\"Carmésia\",\"MG\"],[-18.991,-46.3167,\"Carmo do Paranaíba\",\"MG\"],[-15.3549,-49.708,\"Carmo do Rio Verde\",\"GO\"],[-7.0326,-48.3978,\"Carmolândia\",\"TO\"],[-7.3358,-47.4634,\"Carolina\",\"MA\"],[-5.3141,-48.0314,\"Carrasco Bonito\",\"TO\"],[-1.197,-46.0085,\"Carutapera\",\"MA\"],[-18.5772,-47.8716,\"Cascalho Rico\",\"MG\"],[-9.2761,-49.9521,\"Caseara\",\"TO\"],[-19.1179,-51.7313,\"Cassilândia\",\"MS\"],[-1.298,-47.9167,\"Castanhal\",\"PA\"],[-18.0921,-50.203,\"Castelândia\",\"GO\"],[-5.3187,-41.5499,\"Castelo do Piauí\",\"PI\"],[-18.1656,-47.944,\"Catalão\",\"GO\"],[-12.31,-44.8648,\"Catolândia\",\"BA\"],[-17.3018,-41.5276,\"Catuji\",\"MG\"],[-16.4447,-49.4936,\"Caturaí\",\"GO\"],[-13.3239,-42.2904,\"Caturama\",\"BA\"],[-15.3616,-42.9627,\"Catuti\",\"MG\"],[-13.7976,-47.4566,\"Cavalcante\",\"GO\"],[-4.8651,-43.3617,\"Caxias\",\"MA\"],[-3.419,-41.8955,\"Caxingó\",\"PI\"],[-2.0003,-44.5281,\"Cedral\",\"MA\"],[-19.1458,-45.712,\"Cedro do Abaeté\",\"MG\"],[-8.961,-47.3304,\"Centenário\",\"TO\"],[-11.1376,-42.1116,\"Central\",\"BA\"],[-18.7612,-41.3143,\"Central de Minas\",\"MG\"],[-2.1983,-44.8254,\"Central do Maranhão\",\"MA\"],[-18.5852,-49.2014,\"Centralina\",\"MG\"],[-2.4489,-46.0345,\"Centro do Guilherme\",\"MA\"],[-2.127,-46.1228,\"Centro Novo do Maranhão\",\"MA\"],[-15.3061,-49.6,\"Ceres\",\"GO\"],[-16.9718,-49.7758,\"Cezarina\",\"GO\"],[-11.6175,-47.7486,\"Chapada da Natividade\",\"TO\"],[-10.1419,-49.1403,\"Chapada de Areia\",\"TO\"],[-17.0881,-42.5392,\"Chapada do Norte\",\"MG\"],[-15.4643,-55.7499,\"Chapada dos Guimarães\",\"MT\"],[-15.3014,-45.6116,\"Chapada Gaúcha\",\"MG\"],[-18.4073,-52.549,\"Chapadão do Céu\",\"GO\"],[-18.788,-52.6263,\"Chapadão do Sul\",\"MS\"],[-3.7388,-43.3538,\"Chapadinha\",\"MA\"],[-3.0357,-41.2435,\"Chaval\",\"CE\"],[-16.0765,-47.9252,\"Cidade Ocidental\",\"GO\"],[-5.1746,-47.7781,\"Cidelândia\",\"MA\"],[-17.082,-44.2061,\"Claro dos Poções\",\"MG\"],[-11.5075,-54.8835,\"Cláudia\",\"MT\"],[-3.4728,-41.5546,\"Cocal\",\"PI\"],[-4.5571,-41.9587,\"Cocal de Telha\",\"PI\"],[-3.6205,-41.4402,\"Cocal dos Alves\",\"PI\"],[-14.3903,-51.0001,\"Cocalinho\",\"MT\"],[-15.7914,-48.7747,\"Cocalzinho de Goiás\",\"GO\"],[-14.1814,-44.5352,\"Cocos\",\"BA\"],[-4.4556,-43.8924,\"Codó\",\"MA\"],[-4.2524,-43.0108,\"Coelho Neto\",\"MA\"],[-5.0922,-42.208,\"Coivaras\",\"PI\"],[-0.9364,-48.2803,\"Colares\",\"PA\"],[-10.8135,-55.461,\"Colíder\",\"MT\"],[-6.032,-44.2543,\"Colinas\",\"MA\"],[-14.1528,-48.076,\"Colinas do Sul\",\"GO\"],[-8.0576,-48.4757,\"Colinas do Tocantins\",\"TO\"],[-8.7246,-48.7638,\"Colméia\",\"TO\"],[-8.1837,-43.794,\"Colônia do Gurguéia\",\"PI\"],[-7.2265,-42.1756,\"Colônia do Piauí\",\"PI\"],[-18.2311,-42.8352,\"Coluna\",\"MG\"],[-12.7917,-46.5388,\"Combinado\",\"TO\"],[-16.2963,-41.7945,\"Comercinho\",\"MG\"],[-8.2614,-49.2689,\"Conceição do Araguaia\",\"PA\"],[-7.8764,-41.5942,\"Conceição do Canindé\",\"PI\"],[-3.8514,-44.8895,\"Conceição do Lago-Açu\",\"MA\"],[-19.0344,-43.4221,\"Conceição do Mato Dentro\",\"MG\"],[-12.2209,-47.2951,\"Conceição do Tocantins\",\"TO\"],[-1.9924,-47.9422,\"Concórdia do Pará\",\"PA\"],[-14.9022,-41.9718,\"Condeúba\",\"BA\"],[-15.2892,-44.4181,\"Cônego Marinho\",\"MG\"],[-10.6437,-51.5699,\"Confresa\",\"MT\"],[-18.8021,-43.6767,\"Congonhas do Norte\",\"MG\"],[-19.1789,-41.4736,\"Conselheiro Pena\",\"MG\"],[-13.7537,-41.048,\"Contendas do Sincorá\",\"BA\"],[-16.6841,-44.3635,\"Coração de Jesus\",\"MG\"],[-15.0356,-41.9308,\"Cordeiros\",\"BA\"],[-19.1224,-44.3224,\"Cordisburgo\",\"MG\"],[-13.8232,-44.4586,\"Coribe\",\"BA\"],[-18.369,-44.4542,\"Corinto\",\"MG\"],[-18.6156,-42.2791,\"Coroaci\",\"MG\"],[-4.1344,-44.1244,\"Coroatá\",\"MA\"],[-18.4734,-47.1933,\"Coromandel\",\"MG\"],[-8.814,-42.5232,\"Coronel José Dias\",\"PI\"],[-16.6148,-42.184,\"Coronel Murta\",\"MG\"],[-16.2918,-50.5503,\"Córrego do Ouro\",\"GO\"],[-10.4333,-45.1633,\"Corrente\",\"PI\"],[-13.3477,-44.6333,\"Correntina\",\"BA\"],[-15.9245,-48.8117,\"Corumbá de Goiás\",\"GO\"],[-18.1415,-48.5626,\"Corumbaíba\",\"GO\"],[-18.5432,-53.1287,\"Costa Rica\",\"MS\"],[-12.0228,-44.2566,\"Cotegipe\",\"BA\"],[-18.0727,-43.4648,\"Couto de Magalhães de Minas\",\"MG\"],[-8.2841,-49.2473,\"Couto Magalhães\",\"TO\"],[-18.5013,-54.751,\"Coxim\",\"MS\"],[-10.5985,-49.1942,\"Cristalândia\",\"TO\"],[-10.6443,-45.1893,\"Cristalândia do Piauí\",\"PI\"],[-16.716,-42.8571,\"Cristália\",\"MG\"],[-16.7676,-47.6131,\"Cristalina\",\"GO\"],[-17.1987,-48.7034,\"Cristianópolis\",\"GO\"],[-8.8227,-44.223,\"Cristino Castro\",\"PI\"],[-12.2249,-44.4214,\"Cristópolis\",\"BA\"],[-14.5412,-49.974,\"Crixás\",\"GO\"],[-11.0994,-48.9152,\"Crixás do Tocantins\",\"TO\"],[-17.2883,-49.3798,\"Cromínia\",\"GO\"],[-18.944,-46.6669,\"Cruzeiro da Fortaleza\",\"MG\"],[-15.601,-56.0974,\"Cuiabá\",\"MT\"],[-18.2644,-48.1511,\"Cumari\",\"GO\"],[-7.811,-50.7698,\"Cumaru do Norte\",\"PA\"],[-18.9648,-41.0986,\"Cuparaque\",\"MG\"],[-10.0326,-44.3002,\"Curimatá\",\"PI\"],[-6.0996,-49.6068,\"Curionópolis\",\"PA\"],[-9.0117,-44.4062,\"Currais\",\"PI\"],[-15.9327,-41.8557,\"Curral de Dentro\",\"MG\"],[-1.8118,-49.7952,\"Curralinho\",\"PA\"],[-5.6082,-42.8376,\"Curralinhos\",\"PI\"],[-1.8878,-55.1168,\"Curuá\",\"PA\"],[-0.7332,-47.8515,\"Curuçá\",\"PA\"],[-1.8148,-44.8644,\"Cururupu\",\"MA\"],[-18.7527,-44.4303,\"Curvelo\",\"MG\"],[-14.5604,-46.178,\"Damianópolis\",\"GO\"],[-16.2544,-49.3631,\"Damolândia\",\"GO\"],[-6.7159,-47.7597,\"Darcinópolis\",\"TO\"],[-18.4478,-43.6591,\"Datas\",\"MG\"],[-5.5464,-47.4217,\"Davinópolis\",\"MA\"],[-18.1501,-47.5568,\"Davinópolis\",\"GO\"],[-5.3587,-42.6776,\"Demerval Lobão\",\"PI\"],[-18.2413,-43.6031,\"Diamantina\",\"MG\"],[-14.4037,-56.4366,\"Diamantino\",\"MT\"],[-11.624,-46.8198,\"Dianópolis\",\"TO\"],[-16.2329,-51.2543,\"Diorama\",\"GO\"],[-9.3394,-42.4348,\"Dirceu Arcoverde\",\"PI\"],[-18.7755,-41.4781,\"Divino das Laranjeiras\",\"MG\"],[-18.8004,-42.6103,\"Divinolândia de Minas\",\"MG\"],[-13.2853,-46.3999,\"Divinópolis de Goiás\",\"GO\"],[-9.8002,-49.2169,\"Divinópolis do Tocantins\",\"TO\"],[-15.7221,-41.3463,\"Divisa Alegre\",\"MG\"],[-9.2553,-49.0638,\"Dois Irmãos do Tocantins\",\"TO\"],[-15.8099,-54.9223,\"Dom Aquino\",\"MT\"],[-13.7565,-41.7677,\"Dom Basílio\",\"BA\"],[-16.652,-46.2597,\"Dom Bosco\",\"MG\"],[-19.3735,-42.1121,\"Dom Cavati\",\"MG\"],[-4.1994,-47.8245,\"Dom Eliseu\",\"PA\"],[-6.9533,-41.6396,\"Dom Expedito Lopes\",\"PI\"],[-9.0052,-41.9697,\"Dom Inocêncio\",\"PI\"],[-18.961,-43.2544,\"Dom Joaquim\",\"MG\"],[-5.0352,-44.4409,\"Dom Pedro\",\"MA\"],[-4.2495,-41.2683,\"Domingos Mourão\",\"PI\"],[-19.0516,-42.9254,\"Dores de Guanhães\",\"MG\"],[-19.4628,-45.5927,\"Dores do Indaiá\",\"MG\"],[-18.4338,-47.5993,\"Douradoquara\",\"MG\"],[-16.7188,-52.3189,\"Doverlândia\",\"GO\"],[-11.3416,-49.2716,\"Dueré\",\"TO\"],[-4.15,-42.9477,\"Duque Bacelar\",\"MA\"],[-17.4239,-49.6644,\"Edealina\",\"GO\"],[-17.3406,-49.9295,\"Edéia\",\"GO\"],[-6.1039,-49.3553,\"Eldorado do Carajás\",\"PA\"],[-6.1995,-42.1355,\"Elesbão Veloso\",\"PI\"],[-8.0963,-43.6705,\"Eliseu Martins\",\"PI\"],[-19.2065,-42.0503,\"Engenheiro Caldas\",\"MG\"],[-17.2831,-43.947,\"Engenheiro Navarro\",\"MG\"],[-13.4215,-42.1352,\"Érico Cardoso\",\"BA\"],[-5.3659,-48.5378,\"Esperantina\",\"TO\"],[-3.8886,-42.2324,\"Esperantina\",\"PI\"],[-4.8794,-44.6926,\"Esperantinópolis\",\"MA\"],[-14.9249,-42.809,\"Espinosa\",\"MG\"],[-6.5608,-47.4431,\"Estreito\",\"MA\"],[-13.8665,-49.0716,\"Estrela do Norte\",\"GO\"],[-18.7399,-47.6956,\"Estrela do Sul\",\"MG\"],[-15.4473,-50.3622,\"Faina\",\"GO\"],[-2.1681,-56.7405,\"Faro\",\"PA\"],[-9.4834,-42.7912,\"Fartura do Piauí\",\"PI\"],[-10.7603,-48.9076,\"Fátima\",\"TO\"],[-16.1834,-50.7781,\"Fazenda Nova\",\"GO\"],[-14.2044,-44.2744,\"Feira da Mata\",\"BA\"],[-6.9651,-46.6786,\"Feira Nova do Maranhão\",\"MA\"],[-18.0755,-43.2422,\"Felício dos Santos\",\"MG\"],[-18.7507,-44.9004,\"Felixlândia\",\"MG\"],[-12.385,-54.9227,\"Feliz Natal\",\"MT\"],[-19.1541,-42.0803,\"Fernandes Tourinho\",\"MG\"],[-6.1621,-44.8979,\"Fernando Falcão\",\"MA\"],[-19.2343,-43.0192,\"Ferros\",\"MG\"],[-18.6782,-53.638,\"Figueirão\",\"MS\"],[-12.1312,-49.1748,\"Figueirópolis\",\"TO\"],[-7.335,-47.4954,\"Filadélfia\",\"TO\"],[-16.5778,-50.304,\"Firminópolis\",\"GO\"],[-14.4451,-47.0417,\"Flores de Goiás\",\"GO\"],[-7.7879,-42.918,\"Flores do Piauí\",\"PI\"],[-7.5534,-49.7125,\"Floresta do Araguaia\",\"PA\"],[-7.4668,-41.7883,\"Floresta do Piauí\",\"PI\"],[-6.7718,-43.0241,\"Floriano\",\"PI\"],[-15.54,-47.337,\"Formosa\",\"GO\"],[-6.4402,-46.1916,\"Formosa da Serra Negra\",\"MA\"],[-11.0328,-45.193,\"Formosa do Rio Preto\",\"BA\"],[-13.6499,-48.8775,\"Formoso\",\"GO\"],[-14.9446,-46.2371,\"Formoso\",\"MG\"],[-11.7976,-49.5316,\"Formoso do Araguaia\",\"TO\"],[-9.0561,-48.5206,\"Fortaleza do Tabocão\",\"TO\"],[-6.9598,-46.1749,\"Fortaleza dos Nogueiras\",\"MA\"],[-5.7279,-44.1565,\"Fortuna\",\"MA\"],[-6.3933,-42.2591,\"Francinópolis\",\"PI\"],[-6.6261,-42.6881,\"Francisco Ayres\",\"PI\"],[-16.9883,-42.3568,\"Francisco Badaró\",\"MG\"],[-17.3107,-44.2317,\"Francisco Dumont\",\"MG\"],[-16.4827,-43.4896,\"Francisco Sá\",\"MG\"],[-6.9949,-41.1288,\"Francisco Santos\",\"PI\"],[-17.9578,-42.0094,\"Franciscópolis\",\"MG\"],[-18.0709,-41.4325,\"Frei Gaspar\",\"MG\"],[-18.5556,-41.9121,\"Frei Inocêncio\",\"MG\"],[-18.1751,-42.7617,\"Frei Lagonegro\",\"MG\"],[-16.1225,-42.5288,\"Fruta de Leite\",\"MG\"],[-19.3661,-44.061,\"Funilândia\",\"MG\"],[-19.0005,-41.5387,\"Galiléia\",\"MG\"],[-16.4854,-48.6454,\"Gameleira de Goiás\",\"GO\"],[-15.0829,-43.125,\"Gameleiras\",\"MG\"],[-1.9299,-47.0505,\"Garrafão do Norte\",\"PA\"],[-13.2443,-53.0809,\"Gaúcha do Norte\",\"MT\"],[-7.1548,-41.3409,\"Geminiano\",\"PI\"],[-15.7094,-52.7574,\"General Carneiro\",\"MT\"],[-11.4342,-42.5077,\"Gentio do Ouro\",\"BA\"],[-9.83,-45.3423,\"Gilbués\",\"PI\"],[-16.8481,-43.692,\"Glaucilândia\",\"MG\"],[-1.4026,-45.7795,\"Godofredo Viana\",\"MA\"],[-18.9807,-41.2235,\"Goiabeira\",\"MG\"],[-16.5098,-49.0234,\"Goianápolis\",\"GO\"],[-18.1352,-48.0875,\"Goiandira\",\"GO\"],[-15.3118,-49.1162,\"Goianésia\",\"GO\"],[-3.8434,-49.0974,\"Goianésia do Pará\",\"PA\"],[-16.6864,-49.2643,\"Goiânia\",\"GO\"],[-16.4947,-49.427,\"Goianira\",\"GO\"],[-8.7741,-48.9313,\"Goianorte\",\"TO\"],[-15.9333,-50.14,\"Goiás\",\"GO\"],[-7.7148,-47.3252,\"Goiatins\",\"TO\"],[-18.0105,-49.3658,\"Goiatuba\",\"GO\"],[-5.1475,-44.3013,\"Gonçalves Dias\",\"MA\"],[-18.8196,-42.4769,\"Gonzaga\",\"MG\"],[-18.4519,-43.7423,\"Gouveia\",\"MG\"],[-18.6238,-50.0805,\"Gouvelândia\",\"GO\"],[-5.0208,-44.2754,\"Governador Archer\",\"MA\"],[-5.7497,-47.3646,\"Governador Edison Lobão\",\"MA\"],[-5.319,-44.2469,\"Governador Eugênio Barros\",\"MA\"],[-5.4783,-44.0774,\"Governador Luiz Rocha\",\"MA\"],[-3.4324,-45.6619,\"Governador Newton Bello\",\"MA\"],[-2.129,-45.8777,\"Governador Nunes Freire\",\"MA\"],[-18.8545,-41.9555,\"Governador Valadares\",\"MG\"],[-5.4055,-44.3358,\"Graça Aranha\",\"MA\"],[-5.8137,-46.1462,\"Grajaú\",\"MA\"],[-16.5662,-42.8923,\"Grão Mogol\",\"MG\"],[-18.5003,-47.7318,\"Grupiara\",\"MG\"],[-6.7828,-43.5594,\"Guadalupe\",\"PI\"],[-14.5467,-41.9381,\"Guajeru\",\"BA\"],[-14.2231,-42.7799,\"Guanambi\",\"BA\"],[-18.7713,-42.9312,\"Guanhães\",\"MG\"],[-16.8297,-49.5345,\"Guapó\",\"GO\"],[-17.0142,-43.6675,\"Guaraciama\",\"MG\"],[-8.8354,-48.5114,\"Guaraí\",\"TO\"],[-15.6121,-50.0265,\"Guaraíta\",\"GO\"],[-13.9421,-46.4868,\"Guarani de Goiás\",\"GO\"],[-9.9622,-54.9121,\"Guarantã do Norte\",\"MT\"],[-17.7673,-47.0998,\"Guarda-Mor\",\"MG\"],[-9.3865,-43.6943,\"Guaribas\",\"PI\"],[-14.7292,-49.7006,\"Guarinos\",\"GO\"],[-2.1275,-44.602,\"Guimarães\",\"MA\"],[-18.8425,-46.7901,\"Guimarânia\",\"MG\"],[-16.346,-53.7575,\"Guiratinga\",\"MT\"],[-19.2143,-49.7876,\"Gurinhatã\",\"MG\"],[-1.4141,-51.6338,\"Gurupá\",\"PA\"],[-11.7279,-49.068,\"Gurupi\",\"TO\"],[-15.719,-49.8268,\"Heitoraí\",\"GO\"],[-16.9626,-49.2265,\"Hidrolândia\",\"GO\"],[-14.7261,-49.4634,\"Hidrolina\",\"GO\"],[-5.9886,-42.5598,\"Hugo Napoleão\",\"PI\"],[-2.5983,-43.4649,\"Humberto de Campos\",\"MA\"],[-14.1011,-46.6335,\"Iaciara\",\"GO\"],[-19.4387,-42.2147,\"Iapu\",\"MG\"],[-19.4749,-46.5474,\"Ibiá\",\"MG\"],[-16.8591,-44.9046,\"Ibiaí\",\"MG\"],[-14.2711,-42.257,\"Ibiassucê\",\"BA\"],[-13.4059,-41.284,\"Ibicoara\",\"BA\"],[-11.6438,-42.0195,\"Ibipeba\",\"BA\"],[-12.8804,-42.4856,\"Ibipitanga\",\"BA\"],[-15.6605,-44.1667,\"Ibiracatu\",\"MG\"],[-12.6502,-42.2179,\"Ibitiara\",\"BA\"],[-11.5414,-41.9748,\"Ibititá\",\"BA\"],[-12.1779,-43.2167,\"Ibotirama\",\"BA\"],[-16.214,-44.9034,\"Icaraí de Minas\",\"MG\"],[-2.7721,-44.0501,\"Icatu\",\"MA\"],[-13.774,-42.7155,\"Igaporã\",\"BA\"],[-3.6577,-45.2114,\"Igarapé do Meio\",\"MA\"],[-4.6625,-44.8558,\"Igarapé Grande\",\"MA\"],[-1.1254,-47.626,\"Igarapé-Açu\",\"PA\"],[-1.9753,-48.9575,\"Igarapé-Miri\",\"PA\"],[-2.8577,-41.8186,\"Ilha Grande\",\"PI\"],[-5.5185,-47.4777,\"Imperatriz\",\"MA\"],[-18.4869,-49.9888,\"Inaciolândia\",\"GO\"],[-15.4911,-42.2005,\"Indaiabira\",\"MG\"],[-19.0341,-47.9155,\"Indianópolis\",\"MG\"],[-17.1387,-49.9862,\"Indiara\",\"GO\"],[-1.4349,-47.9114,\"Inhangapi\",\"PA\"],[-19.4898,-44.3934,\"Inhaúma\",\"MG\"],[-6.665,-41.7041,\"Inhuma\",\"PI\"],[-16.3611,-49.5001,\"Inhumas\",\"GO\"],[-18.7271,-44.3584,\"Inimutaba\",\"MG\"],[-19.4158,-42.4139,\"Ipaba\",\"MG\"],[-17.7215,-48.1581,\"Ipameri\",\"GO\"],[-19.4703,-42.5476,\"Ipatinga\",\"MG\"],[-18.6927,-49.9436,\"Ipiaçu\",\"MG\"],[-15.1689,-49.6695,\"Ipiranga de Goiás\",\"GO\"],[-12.2408,-56.1531,\"Ipiranga do Norte\",\"MT\"],[-6.8242,-41.7381,\"Ipiranga do Piauí\",\"PI\"],[-2.5599,-47.5059,\"Ipixuna do Pará\",\"PA\"],[-16.4398,-51.118,\"Iporá\",\"GO\"],[-11.2329,-48.46,\"Ipueiras\",\"TO\"],[-11.8219,-42.6179,\"Ipupiara\",\"BA\"],[-18.9819,-47.461,\"Iraí de Minas\",\"MG\"],[-12.2429,-41.6155,\"Iraquara\",\"BA\"],[-11.3033,-41.8535,\"Irecê\",\"BA\"],[-1.7698,-47.446,\"Irituia\",\"PA\"],[-7.736,-41.6735,\"Isaías Coelho\",\"PI\"],[-16.3144,-50.9087,\"Israelândia\",\"GO\"],[-16.0206,-49.806,\"Itaberaí\",\"GO\"],[-18.5712,-41.234,\"Itabirinha\",\"MG\"],[-8.3929,-47.7726,\"Itacajá\",\"TO\"],[-17.0625,-43.3069,\"Itacambira\",\"MG\"],[-15.089,-44.095,\"Itacarambi\",\"MG\"],[-11.0147,-42.3997,\"Itaguaçu da Bahia\",\"BA\"],[-15.918,-49.6071,\"Itaguari\",\"GO\"],[-15.7565,-49.6354,\"Itaguaru\",\"GO\"],[-5.7727,-47.4864,\"Itaguatins\",\"TO\"],[-7.4434,-41.4687,\"Itainópolis\",\"PI\"],[-5.1425,-45.7877,\"Itaipava do Grajaú\",\"MA\"],[-17.4014,-41.6697,\"Itaipé\",\"MG\"],[-4.2667,-55.9926,\"Itaituba\",\"PA\"],[-19.0673,-51.5495,\"Itajá\",\"GO\"],[-17.8552,-42.8561,\"Itamarandiba\",\"MG\"],[-18.035,-41.683,\"Itambacuri\",\"MG\"],[-19.4158,-43.3182,\"Itambé do Mato Dentro\",\"MG\"],[-12.2259,-56.6463,\"Itanhangá\",\"MT\"],[-19.1736,-41.863,\"Itanhomi\",\"MG\"],[-16.5571,-41.5017,\"Itaobim\",\"MG\"],[-14.9522,-49.5511,\"Itapaci\",\"GO\"],[-3.402,-44.3508,\"Itapecuru Mirim\",\"MA\"],[-15.8205,-50.6094,\"Itapirapuã\",\"GO\"],[-8.3798,-48.1072,\"Itapiratins\",\"TO\"],[-8.5717,-48.6895,\"Itaporã do Tocantins\",\"TO\"],[-15.5606,-49.949,\"Itapuranga\",\"GO\"],[-18.7646,-51.3485,\"Itarumã\",\"GO\"],[-11.0614,-55.2766,\"Itaúba\",\"MT\"],[-16.2029,-49.6109,\"Itauçu\",\"GO\"],[-7.5999,-43.0249,\"Itaueira\",\"PI\"],[-16.61,-41.7672,\"Itinga\",\"MG\"],[-4.4529,-47.5235,\"Itinga do Maranhão\",\"MA\"],[-17.2147,-54.1422,\"Itiquira\",\"MT\"],[-13.8107,-41.3003,\"Ituaçu\",\"BA\"],[-19.3999,-41.1746,\"Itueta\",\"MG\"],[-18.9772,-49.4639,\"Ituiutaba\",\"MG\"],[-18.4093,-49.2158,\"Itumbiara\",\"GO\"],[-5.1327,-49.3358,\"Itupiranga\",\"PA\"],[-14.4054,-43.5595,\"Iuiú\",\"BA\"],[-16.5995,-50.7921,\"Ivolândia\",\"GO\"],[-13.6071,-44.4255,\"Jaborandi\",\"BA\"],[-14.8541,-42.4329,\"Jacaraci\",\"BA\"],[-15.9548,-54.9733,\"Jaciara\",\"MT\"],[-7.9306,-41.2075,\"Jacobina do Piauí\",\"PI\"],[-4.4462,-49.1153,\"Jacundá\",\"PA\"],[-15.3432,-43.6688,\"Jaíba\",\"MG\"],[-7.3623,-41.1371,\"Jaicós\",\"PI\"],[-18.461,-41.809,\"Jampruca\",\"MG\"],[-15.8022,-43.3132,\"Janaúba\",\"MG\"],[-17.0481,-50.1453,\"Jandaia\",\"GO\"],[-15.235,-56.4917,\"Jangada\",\"MT\"],[-15.4802,-44.3639,\"Januária\",\"MG\"],[-15.9891,-44.2758,\"Japonvar\",\"MG\"],[-15.7529,-49.3344,\"Jaraguá\",\"GO\"],[-6.099,-42.63,\"Jardim do Mulato\",\"PI\"],[-17.8784,-51.7204,\"Jataí\",\"GO\"],[-5.8228,-44.2153,\"Jatobá\",\"MA\"],[-4.7702,-41.817,\"Jatobá do Piauí\",\"PI\"],[-12.6509,-48.589,\"Jaú do Tocantins\",\"TO\"],[-16.1773,-50.9508,\"Jaupaci\",\"GO\"],[-17.0831,-42.2589,\"Jenipapo de Minas\",\"MG\"],[-5.3624,-45.6356,\"Jenipapo dos Vieiras\",\"MA\"],[-17.229,-44.4376,\"Jequitaí\",\"MG\"],[-19.2345,-44.0304,\"Jequitibá\",\"MG\"],[-16.4375,-41.0117,\"Jequitinhonha\",\"MG\"],[-7.0913,-43.5033,\"Jerumenha\",\"PI\"],[-15.9484,-49.3739,\"Jesúpolis\",\"GO\"],[-16.6522,-41.0229,\"Joaíma\",\"MG\"],[-19.1729,-42.6775,\"Joanésia\",\"MG\"],[-8.5074,-42.4264,\"João Costa\",\"PI\"],[-11.3486,-41.6548,\"João Dourado\",\"BA\"],[-5.4436,-47.4064,\"João Lisboa\",\"MA\"],[-17.7398,-46.1715,\"João Pinheiro\",\"MG\"],[-17.758,-44.1643,\"Joaquim Felício\",\"MG\"],[-3.5016,-42.1865,\"Joaquim Pires\",\"PI\"],[-3.4804,-42.4255,\"Joca Marques\",\"PI\"],[-4.7515,-42.5746,\"José de Freitas\",\"PI\"],[-16.9053,-42.6014,\"José Gonçalves de Minas\",\"MG\"],[-18.2195,-42.4946,\"José Raydan\",\"MG\"],[-4.9861,-44.6958,\"Joselândia\",\"MA\"],[-16.5417,-42.5151,\"Josenópolis\",\"MG\"],[-17.802,-49.6197,\"Joviânia\",\"GO\"],[-8.1195,-49.0643,\"Juarina\",\"TO\"],[-5.1746,-41.6976,\"Juazeiro do Piauí\",\"PI\"],[-10.3225,-44.2381,\"Júlio Borges\",\"PI\"],[-1.8389,-46.09,\"Junco do Maranhão\",\"MA\"],[-16.8473,-43.5865,\"Juramento\",\"MG\"],[-9.2199,-43.1337,\"Jurema\",\"PI\"],[-2.1635,-56.0889,\"Juruti\",\"PA\"],[-16.0633,-54.8859,\"Juscimeira\",\"MT\"],[-11.0431,-41.9702,\"Jussara\",\"BA\"],[-15.8659,-50.8668,\"Jussara\",\"GO\"],[-13.5155,-41.5882,\"Jussiape\",\"BA\"],[-14.2662,-44.1597,\"Juvenília\",\"MG\"],[-17.6279,-41.7488,\"Ladainha\",\"MG\"],[-18.1759,-46.8063,\"Lagamar\",\"MG\"],[-4.5697,-45.1319,\"Lago da Pedra\",\"MA\"],[-4.609,-45.049,\"Lago do Junco\",\"MA\"],[-4.6117,-44.9798,\"Lago dos Rodrigues\",\"MA\"],[-3.9466,-44.826,\"Lago Verde\",\"MA\"],[-4.5154,-42.6309,\"Lagoa Alegre\",\"PI\"],[-10.7906,-49.6199,\"Lagoa da Confusão\",\"TO\"],[-4.385,-41.5969,\"Lagoa de São Francisco\",\"PI\"],[-8.4767,-41.5342,\"Lagoa do Barro do Piauí\",\"PI\"],[-6.0502,-43.5333,\"Lagoa do Mato\",\"MA\"],[-5.4186,-42.6437,\"Lagoa do Piauí\",\"PI\"],[-6.5077,-41.5653,\"Lagoa do Sítio\",\"PI\"],[-10.368,-47.538,\"Lagoa do Tocantins\",\"TO\"],[-16.978,-44.5754,\"Lagoa dos Patos\",\"MG\"],[-18.7715,-46.4012,\"Lagoa Formosa\",\"MG\"],[-17.8323,-46.5165,\"Lagoa Grande\",\"MG\"],[-4.9889,-45.3816,\"Lagoa Grande do Maranhão\",\"MA\"],[-14.0334,-42.1328,\"Lagoa Real\",\"BA\"],[-19.1832,-51.3998,\"Lagoa Santa\",\"GO\"],[-5.8307,-42.6223,\"Lagoinha do Piauí\",\"PI\"],[-9.75,-48.3565,\"Lajeado\",\"TO\"],[-6.1854,-47.0293,\"Lajeado Novo\",\"MA\"],[-7.2592,-43.9364,\"Landri Sales\",\"PI\"],[-11.3851,-41.8286,\"Lapão\",\"BA\"],[-0.8049,-52.453,\"Laranjal do Jari\",\"AP\"],[-17.887,-44.5735,\"Lassance\",\"MG\"],[-12.7847,-46.5099,\"Lavandeira\",\"TO\"],[-17.0793,-42.6936,\"Leme do Prado\",\"MG\"],[-12.5616,-41.3928,\"Lençóis\",\"BA\"],[-16.619,-48.7428,\"Leopoldo de Bulhões\",\"GO\"],[-14.6842,-42.5095,\"Licínio de Almeida\",\"BA\"],[-4.5184,-44.4646,\"Lima Campos\",\"MA\"],[-1.8985,-49.3903,\"Limoeiro do Ajuru\",\"PA\"],[-13.6369,-41.8432,\"Livramento de Nossa Senhora\",\"BA\"],[-9.59,-46.6738,\"Lizarda\",\"TO\"],[-15.9013,-44.306,\"Lontra\",\"MG\"],[-7.0811,-45.1451,\"Loreto\",\"MA\"],[-13.0588,-55.9042,\"Lucas do Rio Verde\",\"MT\"],[-11.2219,-50.6676,\"Luciara\",\"MT\"],[-2.8844,-41.6641,\"Luís Correia\",\"PI\"],[-1.2749,-45.867,\"Luís Domingues\",\"MA\"],[-12.0956,-45.7866,\"Luís Eduardo Magalhães\",\"BA\"],[-16.1095,-44.5886,\"Luislândia\",\"MG\"],[-16.253,-47.95,\"Luziânia\",\"GO\"],[-3.4683,-42.3718,\"Luzilândia\",\"PI\"],[-6.1779,-47.8582,\"Luzinópolis\",\"TO\"],[-13.0186,-42.6945,\"Macaúbas\",\"BA\"],[-3.4862,-42.4981,\"Madeiro\",\"PI\"],[-2.0568,-47.5601,\"Mãe do Rio\",\"PA\"],[-14.6623,-41.4915,\"Maetinga\",\"BA\"],[-0.8034,-47.6014,\"Magalhães Barata\",\"PA\"],[-3.3923,-42.2117,\"Magalhães de Almeida\",\"MA\"],[-17.2975,-49.4898,\"Mairipotaba\",\"GO\"],[-17.8456,-42.0769,\"Malacacheta\",\"MG\"],[-14.3371,-43.7686,\"Malhada\",\"BA\"],[-14.3847,-41.8842,\"Malhada de Pedras\",\"BA\"],[-14.4823,-46.1165,\"Mambaí\",\"GO\"],[-15.0479,-42.9469,\"Mamonas\",\"MG\"],[-14.7529,-43.9391,\"Manga\",\"MG\"],[-8.0123,-43.8755,\"Manoel Emídio\",\"PI\"],[-10.7227,-44.0428,\"Mansidão\",\"BA\"],[-18.8594,-41.124,\"Mantenópolis\",\"ES\"],[-14.0148,-49.1777,\"Mara Rosa\",\"GO\"],[-5.3807,-49.1327,\"Marabá\",\"PA\"],[-2.0492,-45.9587,\"Maracaçumé\",\"MA\"],[-0.7789,-47.452,\"Maracanã\",\"PA\"],[-4.6281,-45.4531,\"Marajá do Sena\",\"MA\"],[-2.2408,-45.8507,\"Maranhãozinho\",\"MA\"],[-0.7147,-47.7034,\"Marapanim\",\"PA\"],[-11.0463,-54.4377,\"Marcelândia\",\"MT\"],[-7.1156,-43.8926,\"Marcos Parente\",\"PI\"],[-9.7938,-49.6553,\"Marianópolis do Tocantins\",\"TO\"],[-18.5079,-42.0822,\"Marilac\",\"MG\"],[-1.36,-48.3421,\"Marituba\",\"PA\"],[-19.3306,-45.2434,\"Martinho Campos\",\"MG\"],[-17.983,-48.6415,\"Marzagão\",\"GO\"],[-7.4747,-41.1103,\"Massapê do Piauí\",\"PI\"],[-3.6204,-43.1112,\"Mata Roma\",\"MA\"],[-10.5464,-46.4168,\"Mateiros\",\"TO\"],[-18.4699,-43.0579,\"Materlândia\",\"MG\"],[-18.59,-41.9166,\"Mathias Lobato\",\"MG\"],[-14.8563,-43.9146,\"Matias Cardoso\",\"MG\"],[-3.7149,-42.5507,\"Matias Olímpio\",\"PI\"],[-13.9109,-42.8439,\"Matina\",\"BA\"],[-3.0985,-45.035,\"Matinha\",\"MA\"],[-15.3944,-42.86,\"Mato Verde\",\"MG\"],[-5.5136,-43.2018,\"Matões\",\"MA\"],[-3.6244,-44.5468,\"Matões do Norte\",\"MA\"],[-15.4342,-50.7456,\"Matrinchã\",\"GO\"],[-10.1821,-54.9467,\"Matupá\",\"MT\"],[-19.2179,-45.9664,\"Matutina\",\"MG\"],[-17.9719,-50.3388,\"Maurilândia\",\"GO\"],[-5.9517,-47.5125,\"Maurilândia do Tocantins\",\"TO\"],[-3.4464,-52.8875,\"Medicilândia\",\"PA\"],[-16.2245,-41.4728,\"Medina\",\"MG\"],[-1.8032,-50.7149,\"Melgaço\",\"PA\"],[-18.6631,-41.4052,\"Mendes Pimentel\",\"MG\"],[-19.224,-42.6079,\"Mesquita\",\"MG\"],[-4.1686,-42.8963,\"Miguel Alves\",\"PI\"],[-5.6808,-42.7436,\"Miguel Leão\",\"PI\"],[-3.5744,-42.6131,\"Milagres do Maranhão\",\"MA\"],[-4.6829,-41.4173,\"Milton Brandão\",\"PI\"],[-15.0515,-48.1611,\"Mimoso de Goiás\",\"GO\"],[-13.5304,-48.2206,\"Minaçu\",\"GO\"],[-17.2156,-42.5884,\"Minas Novas\",\"MG\"],[-17.5654,-52.5537,\"Mineiros\",\"GO\"],[-16.256,-44.1602,\"Mirabela\",\"MG\"],[-9.5656,-48.393,\"Miracema do Tocantins\",\"TO\"],[-6.3745,-44.3683,\"Mirador\",\"MA\"],[-3.5631,-44.5814,\"Miranda do Norte\",\"MA\"],[-9.5291,-48.5922,\"Miranorte\",\"TO\"],[-14.7348,-44.4092,\"Miravânia\",\"MG\"],[-2.0709,-44.7787,\"Mirinzal\",\"MA\"],[-2.5831,-49.5042,\"Mocajuba\",\"PA\"],[-16.5434,-50.739,\"Moiporá\",\"GO\"],[-1.8899,-48.7668,\"Moju\",\"PA\"],[-2.6822,-54.6425,\"Mojuí dos Campos\",\"PA\"],[-3.4813,-45.2496,\"Monção\",\"MA\"],[-18.3245,-44.118,\"Monjolos\",\"MG\"],[-5.562,-42.6075,\"Monsenhor Gil\",\"PI\"],[-6.9928,-41.026,\"Monsenhor Hipólito\",\"PI\"],[-14.4197,-44.3719,\"Montalvânia\",\"MG\"],[-1.9977,-54.0724,\"Monte Alegre\",\"PA\"],[-13.2552,-46.8928,\"Monte Alegre de Goiás\",\"GO\"],[-18.869,-48.881,\"Monte Alegre de Minas\",\"MG\"],[-9.7536,-45.3037,\"Monte Alegre do Piauí\",\"PI\"],[-15.1514,-42.8718,\"Monte Azul\",\"MG\"],[-18.7302,-47.4912,\"Monte Carmelo\",\"MG\"],[-10.7611,-48.1114,\"Monte do Carmo\",\"TO\"],[-16.8691,-41.2473,\"Monte Formoso\",\"MG\"],[-10.0075,-48.9941,\"Monte Santo do Tocantins\",\"TO\"],[-5.8307,-47.0673,\"Montes Altos\",\"MA\"],[-16.7282,-43.8578,\"Montes Claros\",\"MG\"],[-16.0059,-51.3979,\"Montes Claros de Goiás\",\"GO\"],[-15.1702,-42.4941,\"Montezuma\",\"MG\"],[-17.4439,-51.1728,\"Montividiu\",\"GO\"],[-13.3485,-48.6853,\"Montividiu do Norte\",\"GO\"],[-18.5998,-45.3584,\"Morada Nova de Minas\",\"MG\"],[-11.5569,-43.2766,\"Morpará\",\"BA\"],[-17.7334,-49.1059,\"Morrinhos\",\"GO\"],[-15.3184,-50.0553,\"Morro Agudo de Goiás\",\"GO\"],[-9.7189,-43.9072,\"Morro Cabeça no Tempo\",\"PI\"],[-18.5356,-44.601,\"Morro da Garça\",\"MG\"],[-11.5488,-41.1565,\"Morro do Chapéu\",\"BA\"],[-3.7334,-42.3024,\"Morro do Chapéu do Piauí\",\"PI\"],[-19.2236,-43.3795,\"Morro do Pilar\",\"MG\"],[-2.8538,-44.0357,\"Morros\",\"MA\"],[-15.0225,-42.3727,\"Mortugaba\",\"BA\"],[-16.124,-50.2136,\"Mossâmedes\",\"GO\"],[-14.7457,-50.5713,\"Mozarlândia\",\"GO\"],[-1.5394,-49.2224,\"Muaná\",\"PA\"],[-13.0053,-41.3703,\"Mucugê\",\"BA\"],[-11.9648,-41.6374,\"Mulungu do Morro\",\"BA\"],[-13.7729,-50.2814,\"Mundo Novo\",\"GO\"],[-12.065,-43.5497,\"Muquém de São Francisco\",\"BA\"],[-3.319,-42.094,\"Murici dos Portelas\",\"PI\"],[-7.1467,-48.6091,\"Muricilândia\",\"TO\"],[-13.7303,-49.2745,\"Mutunópolis\",\"GO\"],[-18.4544,-42.2481,\"Nacip Raydan\",\"MG\"],[-19.2291,-42.3312,\"Naque\",\"MG\"],[-16.5021,-46.4874,\"Natalândia\",\"MG\"],[-11.7034,-47.7223,\"Natividade\",\"TO\"],[-6.375,-47.6643,\"Nazaré\",\"TO\"],[-6.9702,-42.6773,\"Nazaré do Piauí\",\"PI\"],[-5.3513,-42.8153,\"Nazária\",\"PI\"],[-16.5808,-49.8817,\"Nazário\",\"GO\"],[-16.4047,-49.2227,\"Nerópolis\",\"GO\"],[-2.2079,-56.7112,\"Nhamundá\",\"AM\"],[-3.4679,-43.9134,\"Nina Rodrigues\",\"MA\"],[-15.3148,-41.7564,\"Ninheira\",\"MG\"],[-14.4662,-48.4599,\"Niquelândia\",\"GO\"],[-14.7192,-56.3284,\"Nobres\",\"MT\"],[-14.454,-56.7945,\"Nortelândia\",\"MT\"],[-4.6302,-42.173,\"Nossa Senhora de Nazaré\",\"PI\"],[-15.772,-56.3432,\"Nossa Senhora do Livramento\",\"MT\"],[-3.9757,-42.6184,\"Nossa Senhora dos Remédios\",\"PI\"],[-15.0206,-49.8953,\"Nova América\",\"GO\"],[-18.0597,-48.2552,\"Nova Aurora\",\"GO\"],[-18.4925,-41.1107,\"Nova Belém\",\"MG\"],[-14.9612,-54.9685,\"Nova Brasilândia\",\"MT\"],[-10.558,-55.953,\"Nova Canaã do Norte\",\"MT\"],[-7.1226,-46.2607,\"Nova Colinas\",\"MA\"],[-14.0957,-50.33,\"Nova Crixás\",\"GO\"],[-2.2669,-46.9731,\"Nova Esperança do Piriá\",\"PA\"],[-15.145,-49.5737,\"Nova Glória\",\"GO\"],[-10.312,-55.4061,\"Nova Guarita\",\"MT\"],[-14.2868,-49.3872,\"Nova Iguaçu de Goiás\",\"GO\"],[-6.7305,-44.0471,\"Nova Iorque\",\"MA\"],[-4.9162,-49.0822,\"Nova Ipixuna\",\"PA\"],[-14.3568,-56.9696,\"Nova Marilândia\",\"MT\"],[-18.4417,-41.4984,\"Nova Módica\",\"MG\"],[-13.8374,-56.0743,\"Nova Mutum\",\"MT\"],[-13.9486,-51.8002,\"Nova Nazaré\",\"MT\"],[-7.6317,-48.4252,\"Nova Olinda\",\"TO\"],[-2.8423,-45.6953,\"Nova Olinda do Maranhão\",\"MA\"],[-19.1461,-47.6779,\"Nova Ponte\",\"MG\"],[-15.7993,-43.2941,\"Nova Porteirinha\",\"MG\"],[-12.815,-41.0748,\"Nova Redenção\",\"BA\"],[-13.7388,-46.8734,\"Nova Roma\",\"GO\"],[-10.5651,-48.9125,\"Nova Rosalândia\",\"TO\"],[-10.8651,-55.1872,\"Nova Santa Helena\",\"MT\"],[-8.0971,-42.0471,\"Nova Santa Rita\",\"PI\"],[-1.2087,-47.3921,\"Nova Timboteua\",\"PA\"],[-12.9834,-55.2556,\"Nova Ubiratã\",\"MT\"],[-16.3695,-49.3168,\"Nova Veneza\",\"GO\"],[-14.6771,-52.3502,\"Nova Xavantina\",\"MT\"],[-9.9706,-47.6785,\"Novo Acordo\",\"TO\"],[-12.9217,-46.5713,\"Novo Alegre\",\"TO\"],[-16.0313,-50.7113,\"Novo Brasil\",\"GO\"],[-17.4654,-41.8826,\"Novo Cruzeiro\",\"MG\"],[-16.0592,-48.0417,\"Novo Gama\",\"GO\"],[-12.8083,-42.1682,\"Novo Horizonte\",\"BA\"],[-11.826,-46.6325,\"Novo Jardim\",\"TO\"],[-9.9562,-55.2029,\"Novo Mundo\",\"MT\"],[-17.4089,-41.2194,\"Novo Oriente de Minas\",\"MG\"],[-6.449,-41.9261,\"Novo Oriente do Piauí\",\"PI\"],[-13.2424,-49.506,\"Novo Planalto\",\"GO\"],[-7.1435,-55.3786,\"Novo Progresso\",\"PA\"],[-4.2475,-49.9499,\"Novo Repartimento\",\"PA\"],[-5.2875,-41.9325,\"Novo Santo Antônio\",\"PI\"],[-12.2875,-50.9686,\"Novo Santo Antônio\",\"MT\"],[-14.9054,-53.0194,\"Novo São Joaquim\",\"MT\"],[-16.0162,-42.4044,\"Novorizonte\",\"MG\"],[-1.9011,-55.5208,\"Óbidos\",\"PA\"],[-7.0191,-42.1283,\"Oeiras\",\"PI\"],[-2.0036,-49.8628,\"Oeiras do Pará\",\"PA\"],[-4.1342,-45.1163,\"Olho d'Água das Cunhãs\",\"MA\"],[-5.8412,-42.5594,\"Olho D'Água do Piauí\",\"PI\"],[-17.3982,-43.5719,\"Olhos d'Água\",\"MG\"],[-2.9929,-44.9897,\"Olinda Nova do Maranhão\",\"MA\"],[-10.707,-48.9086,\"Oliveira de Fátima\",\"TO\"],[-12.3132,-42.8969,\"Oliveira dos Brejinhos\",\"BA\"],[-1.7599,-55.8579,\"Oriximiná\",\"PA\"],[-17.0334,-48.2964,\"Orizona\",\"GO\"],[-1.5417,-47.1126,\"Ourém\",\"PA\"],[-6.7529,-51.0858,\"Ourilândia do Norte\",\"PA\"],[-16.2181,-49.1942,\"Ouro Verde de Goiás\",\"GO\"],[-18.0719,-41.2734,\"Ouro Verde de Minas\",\"MG\"],[-10.9578,-41.0756,\"Ourolândia\",\"BA\"],[-18.2277,-47.8355,\"Ouvidor\",\"GO\"],[-3.8354,-50.6399,\"Pacajá\",\"PA\"],[-2.5166,-44.1019,\"Paço do Lumiar\",\"MA\"],[-15.1605,-48.2833,\"Padre Bernardo\",\"GO\"],[-16.3646,-42.5088,\"Padre Carvalho\",\"MG\"],[-17.0758,-41.4821,\"Padre Paraíso\",\"MG\"],[-7.7737,-42.2474,\"Paes Landim\",\"PI\"],[-15.5271,-43.07,\"Pai Pedro\",\"MG\"],[-18.8993,-45.5321,\"Paineiras\",\"MG\"],[-7.8551,-42.8248,\"Pajeú do Piauí\",\"PI\"],[-16.7392,-51.5309,\"Palestina de Goiás\",\"GO\"],[-5.7403,-48.3181,\"Palestina do Pará\",\"PA\"],[-10.24,-48.3558,\"Palmas\",\"TO\"],[-14.2676,-43.1609,\"Palmas de Monte Alto\",\"BA\"],[-8.7308,-44.2466,\"Palmeira do Piauí\",\"PI\"],[-5.9709,-43.056,\"Palmeirais\",\"PI\"],[-2.6443,-44.8933,\"Palmeirândia\",\"MA\"],[-7.8479,-47.9242,\"Palmeirante\",\"TO\"],[-12.5059,-41.5809,\"Palmeiras\",\"BA\"],[-16.8044,-49.924,\"Palmeiras de Goiás\",\"GO\"],[-6.6166,-47.5464,\"Palmeiras do Tocantins\",\"TO\"],[-13.0447,-48.4026,\"Palmeirópolis\",\"TO\"],[-17.3258,-48.426,\"Palmelo\",\"GO\"],[-16.7924,-50.1652,\"Palminópolis\",\"GO\"],[-18.1783,-49.355,\"Panamá\",\"GO\"],[-19.4419,-44.7468,\"Papagaios\",\"MG\"],[-7.103,-41.7,\"Paquetá\",\"PI\"],[-17.2252,-46.8711,\"Paracatu\",\"MG\"],[-3.0021,-47.3527,\"Paragominas\",\"PA\"],[-6.4264,-43.9792,\"Paraibano\",\"MA\"],[-19.0216,-53.0116,\"Paraíso das Águas\",\"MS\"],[-10.175,-48.8823,\"Paraíso do Tocantins\",\"TO\"],[-13.4388,-42.2395,\"Paramirim\",\"BA\"],[-12.6167,-47.8734,\"Paranã\",\"TO\"],[-18.9141,-50.6539,\"Paranaiguara\",\"GO\"],[-9.6584,-56.4786,\"Paranaíta\",\"MT\"],[-14.4265,-54.0524,\"Paranatinga\",\"MT\"],[-19.2732,-44.4044,\"Paraopeba\",\"MG\"],[-12.687,-43.1798,\"Paratinga\",\"BA\"],[-6.0678,-49.9037,\"Parauapebas\",\"PA\"],[-16.9463,-50.4484,\"Paraúna\",\"GO\"],[-2.6374,-56.729,\"Parintins\",\"AM\"],[-10.2166,-44.63,\"Parnaguá\",\"PI\"],[-2.9059,-41.7754,\"Parnaíba\",\"PI\"],[-5.6737,-43.1011,\"Parnarama\",\"MA\"],[-19.3509,-43.1383,\"Passabém\",\"MG\"],[-6.1775,-43.7755,\"Passagem Franca\",\"MA\"],[-5.8604,-42.4436,\"Passagem Franca do Piauí\",\"PI\"],[-6.603,-44.0745,\"Pastos Bons\",\"MA\"],[-16.0773,-44.0787,\"Patis\",\"MG\"],[-18.5699,-46.5013,\"Patos de Minas\",\"MG\"],[-7.6723,-41.2408,\"Patos do Piauí\",\"PI\"],[-18.9379,-46.9934,\"Patrocínio\",\"MG\"],[-1.5977,-46.9268,\"Pau d'Arco\",\"PA\"],[-7.5392,-49.367,\"Pau D'Arco\",\"TO\"],[-5.2607,-42.3908,\"Pau D'Arco do Piauí\",\"PI\"],[-2.7209,-42.5258,\"Paulino Neves\",\"MA\"],[-8.1344,-41.1431,\"Paulistana\",\"PI\"],[-18.4276,-42.8628,\"Paulistas\",\"MG\"],[-4.4448,-45.2398,\"Paulo Ramos\",\"MA\"],[-17.4267,-41.0035,\"Pavão\",\"MG\"],[-7.9606,-43.2284,\"Pavussu\",\"PI\"],[-18.5441,-42.5583,\"Peçanha\",\"MG\"],[-16.0086,-41.2909,\"Pedra Azul\",\"MG\"],[-16.6245,-54.4722,\"Pedra Preta\",\"MT\"],[-15.6032,-44.391,\"Pedras de Maria da Cruz\",\"MG\"],[-4.5648,-44.6006,\"Pedreiras\",\"MA\"],[-19.2241,-47.4579,\"Pedrinópolis\",\"MG\"],[-8.9703,-48.1729,\"Pedro Afonso\",\"TO\"],[-2.9727,-45.3493,\"Pedro do Rosário\",\"MA\"],[-18.0996,-54.5507,\"Pedro Gomes\",\"MS\"],[-4.4258,-41.4482,\"Pedro II\",\"PI\"],[-8.0681,-42.2847,\"Pedro Laurentino\",\"PI\"],[-12.0254,-48.5395,\"Peixe\",\"TO\"],[-1.1938,-47.324,\"Peixe-Boi\",\"PA\"],[-10.2262,-54.9794,\"Peixoto de Azevedo\",\"MT\"],[-3.2767,-45.1768,\"Penalva\",\"MA\"],[-8.5932,-48.9327,\"Pequizeiro\",\"TO\"],[-19.3434,-47.2963,\"Perdizes\",\"MG\"],[-2.5768,-44.8504,\"Peri Mirim\",\"MA\"],[-19.1573,-42.2333,\"Periquito\",\"MG\"],[-4.3746,-44.3369,\"Peritoró\",\"MA\"],[-17.5258,-52.065,\"Perolândia\",\"GO\"],[-18.357,-41.6006,\"Pescador\",\"MG\"],[-16.0968,-49.3364,\"Petrolina de Goiás\",\"GO\"],[-13.1465,-41.7702,\"Piatã\",\"BA\"],[-6.4378,-48.8716,\"Piçarra\",\"PA\"],[-7.0772,-41.467,\"Picos\",\"PI\"],[-10.0051,-42.4936,\"Pilão Arcado\",\"BA\"],[-14.7608,-49.5784,\"Pilar de Goiás\",\"GO\"],[-6.2384,-41.4113,\"Pimenteiras\",\"PI\"],[-14.4921,-42.686,\"Pindaí\",\"BA\"],[-3.6098,-45.342,\"Pindaré-Mirim\",\"MA\"],[-11.1311,-47.5726,\"Pindorama do Tocantins\",\"TO\"],[-2.5222,-45.0788,\"Pinheiro\",\"MA\"],[-16.0572,-45.1402,\"Pintópolis\",\"MG\"],[-3.8931,-45.1759,\"Pio XII\",\"MA\"],[-17.302,-49.017,\"Piracanjuba\",\"GO\"],[-3.9333,-41.7088,\"Piracuruca\",\"PI\"],[-16.4258,-51.8235,\"Piranhas\",\"GO\"],[-3.7204,-44.2216,\"Pirapemas\",\"MA\"],[-17.3392,-44.934,\"Pirapora\",\"MG\"],[-6.773,-48.2958,\"Piraquê\",\"TO\"],[-15.8507,-48.9584,\"Pirenópolis\",\"GO\"],[-17.3019,-48.2768,\"Pires do Rio\",\"GO\"],[-14.9444,-41.7168,\"Piripá\",\"BA\"],[-4.2716,-41.7716,\"Piripiri\",\"PI\"],[-10.442,-49.1876,\"Pium\",\"TO\"],[-3.8681,-54.2124,\"Placas\",\"PA\"],[-15.452,-47.6089,\"Planaltina\",\"GO\"],[-14.6518,-54.7819,\"Planalto da Serra\",\"MT\"],[-4.7463,-44.9432,\"Poção de Pedras\",\"MA\"],[-16.266,-56.6261,\"Poconé\",\"MT\"],[-19.2257,-45.0141,\"Pompéu\",\"MG\"],[-1.3959,-48.8661,\"Ponta de Pedras\",\"PA\"],[-15.9274,-52.3273,\"Pontal do Araguaia\",\"MT\"],[-17.5225,-49.4489,\"Pontalina\",\"GO\"],[-12.0853,-46.4825,\"Ponte Alta do Bom Jesus\",\"TO\"],[-10.7481,-47.5276,\"Ponte Alta do Tocantins\",\"TO\"],[-16.7584,-52.8369,\"Ponte Branca\",\"MT\"],[-16.6282,-45.0588,\"Ponto Chique\",\"MG\"],[-16.7473,-41.5025,\"Ponto dos Volantes\",\"MG\"],[-13.4391,-49.1503,\"Porangatu\",\"GO\"],[-17.8143,-50.1653,\"Porteirão\",\"GO\"],[-15.7404,-43.0281,\"Porteirinha\",\"MG\"],[-1.9364,-50.8194,\"Portel\",\"PA\"],[-17.3554,-52.6799,\"Portelândia\",\"GO\"],[-3.8881,-42.6998,\"Porto\",\"PI\"],[-10.8761,-51.6357,\"Porto Alegre do Norte\",\"MT\"],[-6.9642,-44.1837,\"Porto Alegre do Piauí\",\"PI\"],[-11.618,-47.0621,\"Porto Alegre do Tocantins\",\"TO\"],[-1.7469,-52.2361,\"Porto de Moz\",\"PA\"],[-6.3415,-47.3962,\"Porto Franco\",\"MA\"],[-10.7027,-48.408,\"Porto Nacional\",\"TO\"],[-1.8593,-44.5842,\"Porto Rico do Maranhão\",\"MA\"],[-14.0859,-46.3704,\"Posse\",\"GO\"],[-17.8077,-41.786,\"Poté\",\"MG\"],[-15.8299,-54.4208,\"Poxoréu\",\"MT\"],[-5.3928,-47.8111,\"Praia Norte\",\"TO\"],[-1.798,-53.4779,\"Prainha\",\"PA\"],[-19.3086,-48.9276,\"Prata\",\"MG\"],[-5.6726,-42.2046,\"Prata do Piauí\",\"PI\"],[-11.2923,-41.9843,\"Presidente Dutra\",\"BA\"],[-5.2898,-44.495,\"Presidente Dutra\",\"MA\"],[-14.6885,-41.6798,\"Presidente Jânio Quadros\",\"BA\"],[-18.6401,-44.06,\"Presidente Juscelino\",\"MG\"],[-2.9187,-44.0715,\"Presidente Juscelino\",\"MA\"],[-8.5406,-48.5062,\"Presidente Kennedy\",\"TO\"],[-18.6193,-43.5628,\"Presidente Kubitschek\",\"MG\"],[-2.3899,-45.82,\"Presidente Médici\",\"MA\"],[-18.4096,-46.4165,\"Presidente Olegário\",\"MG\"],[-2.588,-45.3595,\"Presidente Sarney\",\"MA\"],[-3.4079,-44.0234,\"Presidente Vargas\",\"MA\"],[-0.9454,-47.1253,\"Primavera\",\"PA\"],[-15.544,-54.2811,\"Primavera do Leste\",\"MT\"],[-2.5057,-43.4232,\"Primeira Cruz\",\"MA\"],[-17.2497,-49.244,\"Professor Jamil\",\"GO\"],[-19.4742,-44.1591,\"Prudente de Morais\",\"MG\"],[-10.424,-48.8957,\"Pugmil\",\"TO\"],[-19.2703,-45.5569,\"Quartel Geral\",\"MG\"],[-0.8996,-47.0134,\"Quatipuru\",\"PA\"],[-8.5706,-41.4106,\"Queimada Nova\",\"PI\"],[-12.6093,-52.1821,\"Querência\",\"MT\"],[-18.4472,-50.4547,\"Quirinópolis\",\"GO\"],[-2.4254,-44.0973,\"Raposa\",\"MA\"],[-8.7227,-47.2421,\"Recursolândia\",\"TO\"],[-8.0253,-50.0317,\"Redenção\",\"PA\"],[-9.4794,-44.5811,\"Redenção do Gurguéia\",\"PI\"],[-6.2312,-42.6842,\"Regeneração\",\"PI\"],[-9.6194,-42.0848,\"Remanso\",\"BA\"],[-19.3194,-41.2462,\"Resplendor\",\"MG\"],[-7.3582,-46.6225,\"Riachão\",\"MA\"],[-11.7508,-44.9143,\"Riachão das Neves\",\"BA\"],[-6.4401,-48.1371,\"Riachinho\",\"TO\"],[-16.2258,-45.9888,\"Riachinho\",\"MG\"],[-13.6059,-42.9397,\"Riacho de Santana\",\"BA\"],[-16.0091,-43.0488,\"Riacho dos Machados\",\"MG\"],[-10.1244,-44.9503,\"Riacho Frio\",\"PI\"],[-15.3145,-49.5814,\"Rialma\",\"GO\"],[-15.4456,-49.5114,\"Rianápolis\",\"GO\"],[-5.9307,-47.3888,\"Ribamar Fiquene\",\"MA\"],[-7.6903,-42.7128,\"Ribeira do Piauí\",\"PI\"],[-12.9367,-51.8244,\"Ribeirão Cascalheira\",\"MT\"],[-16.4856,-52.6924,\"Ribeirãozinho\",\"MT\"],[-7.5565,-45.2447,\"Ribeiro Gonçalves\",\"PI\"],[-11.3949,-46.8847,\"Rio da Conceição\",\"TO\"],[-13.5852,-41.8048,\"Rio de Contas\",\"BA\"],[-14.4071,-42.0721,\"Rio do Antônio\",\"BA\"],[-13.1185,-42.2902,\"Rio do Pires\",\"BA\"],[-9.3443,-48.5245,\"Rio dos Bois\",\"TO\"],[-7.7803,-43.1369,\"Rio Grande do Piauí\",\"PI\"],[-7.3124,-50.0379,\"Rio Maria\",\"PA\"],[-19.447,-54.9859,\"Rio Negro\",\"MS\"],[-19.1861,-46.2455,\"Rio Paranaíba\",\"MG\"],[-15.616,-42.5405,\"Rio Pardo de Minas\",\"MG\"],[-17.774,-48.7725,\"Rio Quente\",\"GO\"],[-9.35,-47.888,\"Rio Sono\",\"TO\"],[-17.7923,-50.9192,\"Rio Verde\",\"GO\"],[-18.9249,-54.8434,\"Rio Verde de Mato Grosso\",\"MS\"],[-18.2922,-43.0018,\"Rio Vermelho\",\"MG\"],[-18.8838,-47.5782,\"Romaria\",\"MG\"],[-4.7779,-48.067,\"Rondon do Pará\",\"PA\"],[-16.4673,-54.6372,\"Rondonópolis\",\"MT\"],[-2.9344,-44.2531,\"Rosário\",\"MA\"],[-14.8259,-56.4236,\"Rosário Oeste\",\"MT\"],[-16.4053,-42.261,\"Rubelita\",\"MG\"],[-15.1617,-49.8048,\"Rubiataba\",\"GO\"],[-4.1003,-54.9092,\"Rurópolis\",\"PA\"],[-18.6653,-43.0752,\"Sabinópolis\",\"MG\"],[-16.1753,-42.2964,\"Salinas\",\"MG\"],[-0.6308,-47.3465,\"Salinópolis\",\"PA\"],[-0.7584,-48.5139,\"Salvaterra\",\"PA\"],[-7.1345,-45.3515,\"Sambaíba\",\"MA\"],[-5.3542,-47.8782,\"Sampaio\",\"TO\"],[-16.197,-50.3124,\"Sanclerlândia\",\"GO\"],[-12.538,-49.9242,\"Sandolândia\",\"TO\"],[-16.5714,-49.6954,\"Santa Bárbara de Goiás\",\"GO\"],[-1.1922,-48.238,\"Santa Bárbara do Pará\",\"PA\"],[-11.9125,-55.2263,\"Santa Carmem\",\"MT\"],[-17.3155,-48.4809,\"Santa Cruz de Goiás\",\"GO\"],[-16.0967,-41.7418,\"Santa Cruz de Salinas\",\"MG\"],[-0.661,-49.1771,\"Santa Cruz do Arari\",\"PA\"],[-7.1785,-41.7609,\"Santa Cruz do Piauí\",\"PI\"],[-10.1532,-52.3953,\"Santa Cruz do Xingu\",\"MT\"],[-5.8058,-41.9506,\"Santa Cruz dos Milagres\",\"PI\"],[-18.8235,-42.4388,\"Santa Efigênia de Minas\",\"MG\"],[-15.7664,-51.1037,\"Santa Fé de Goiás\",\"GO\"],[-16.6859,-45.4102,\"Santa Fé de Minas\",\"MG\"],[-7.158,-48.7165,\"Santa Fé do Araguaia\",\"TO\"],[-9.1123,-45.9116,\"Santa Filomena\",\"PI\"],[-5.4967,-44.5638,\"Santa Filomena do Maranhão\",\"MA\"],[-2.2443,-45.29,\"Santa Helena\",\"MA\"],[-17.8115,-50.5977,\"Santa Helena de Goiás\",\"GO\"],[-3.6511,-45.3774,\"Santa Inês\",\"MA\"],[-15.2958,-49.4259,\"Santa Isabel\",\"GO\"],[-1.2969,-48.1606,\"Santa Izabel do Pará\",\"PA\"],[-19.3108,-47.5322,\"Santa Juliana\",\"MG\"],[-8.9488,-44.1296,\"Santa Luz\",\"PI\"],[-4.0687,-45.69,\"Santa Luzia\",\"MA\"],[-1.5215,-46.9008,\"Santa Luzia do Pará\",\"PA\"],[-2.5112,-45.7801,\"Santa Luzia do Paruá\",\"MA\"],[-13.3859,-44.2011,\"Santa Maria da Vitória\",\"BA\"],[-8.8578,-49.7215,\"Santa Maria das Barreiras\",\"PA\"],[-19.4431,-43.1064,\"Santa Maria de Itabira\",\"MG\"],[-1.3539,-47.5712,\"Santa Maria do Pará\",\"PA\"],[-18.1896,-42.4139,\"Santa Maria do Suaçuí\",\"MG\"],[-8.8046,-47.7887,\"Santa Maria do Tocantins\",\"TO\"],[-3.4931,-42.5688,\"Santa Quitéria do Maranhão\",\"MA\"],[-3.1424,-44.3211,\"Santa Rita\",\"MA\"],[-11.0063,-44.5255,\"Santa Rita de Cássia\",\"BA\"],[-17.3269,-53.2012,\"Santa Rita do Araguaia\",\"GO\"],[-19.3576,-41.3821,\"Santa Rita do Itueto\",\"MG\"],[-15.1351,-49.1203,\"Santa Rita do Novo Destino\",\"GO\"],[-10.8617,-48.9161,\"Santa Rita do Tocantins\",\"TO\"],[-13.8146,-55.2706,\"Santa Rita do Trivelato\",\"MT\"],[-16.084,-49.4953,\"Santa Rosa de Goiás\",\"GO\"],[-6.7958,-42.2814,\"Santa Rosa do Piauí\",\"PI\"],[-11.4474,-48.1216,\"Santa Rosa do Tocantins\",\"TO\"],[-13.7138,-49.0144,\"Santa Tereza de Goiás\",\"GO\"],[-10.2746,-47.8033,\"Santa Tereza do Tocantins\",\"TO\"],[-10.4704,-50.514,\"Santa Terezinha\",\"MT\"],[-14.4326,-49.7091,\"Santa Terezinha de Goiás\",\"GO\"],[-6.4444,-47.6684,\"Santa Terezinha do Tocantins\",\"TO\"],[-18.8414,-50.1208,\"Santa Vitória\",\"MG\"],[-12.9792,-44.0506,\"Santana\",\"BA\"],[-18.9962,-44.0409,\"Santana de Pirapama\",\"MG\"],[-9.3281,-50.35,\"Santana do Araguaia\",\"PA\"],[-3.109,-42.4064,\"Santana do Maranhão\",\"MA\"],[-19.3661,-42.5446,\"Santana do Paraíso\",\"MG\"],[-6.947,-41.5178,\"Santana do Piauí\",\"PI\"],[-19.1662,-43.722,\"Santana do Riacho\",\"MG\"],[-2.4385,-54.6996,\"Santarém\",\"PA\"],[-0.931,-47.3855,\"Santarém Novo\",\"PA\"],[-2.5007,-43.238,\"Santo Amaro do Maranhão\",\"MA\"],[-17.5585,-50.6345,\"Santo Antônio da Barra\",\"GO\"],[-16.4815,-49.3096,\"Santo Antônio de Goiás\",\"GO\"],[-6.9868,-41.2252,\"Santo Antônio de Lisboa\",\"PI\"],[-15.9412,-48.2578,\"Santo Antônio do Descoberto\",\"GO\"],[-18.4609,-43.3006,\"Santo Antônio do Itambé\",\"MG\"],[-14.805,-53.6075,\"Santo Antônio do Leste\",\"MT\"],[-15.8632,-56.0788,\"Santo Antônio do Leverger\",\"MT\"],[-15.3393,-42.6171,\"Santo Antônio do Retiro\",\"MG\"],[-19.2374,-43.2604,\"Santo Antônio do Rio Abaixo\",\"MG\"],[-1.1522,-48.1314,\"Santo Antônio do Tauá\",\"PA\"],[-4.8661,-44.3653,\"Santo Antônio dos Lopes\",\"MA\"],[-6.0465,-42.7123,\"Santo Antônio dos Milagres\",\"PI\"],[-18.2968,-44.2229,\"Santo Hipólito\",\"MG\"],[-7.4207,-41.9063,\"Santo Inácio do Piauí\",\"PI\"],[-3.3352,-43.5287,\"São Benedito do Rio Preto\",\"MA\"],[-2.6978,-44.8289,\"São Bento\",\"MA\"],[-6.0258,-47.9012,\"São Bento do Tocantins\",\"TO\"],[-3.3722,-42.4191,\"São Bernardo\",\"MA\"],[-9.058,-43.0076,\"São Braz do Piauí\",\"PI\"],[-0.7473,-48.0246,\"São Caetano de Odivelas\",\"PA\"],[-12.3572,-44.9769,\"São Desidério\",\"BA\"],[-13.621,-46.7415,\"São Domingos\",\"GO\"],[-5.5373,-48.7366,\"São Domingos do Araguaia\",\"PA\"],[-6.8147,-44.6509,\"São Domingos do Azeitão\",\"MA\"],[-1.6877,-47.7665,\"São Domingos do Capim\",\"PA\"],[-5.5809,-44.3822,\"São Domingos do Maranhão\",\"MA\"],[-7.0754,-44.8092,\"São Félix de Balsas\",\"MA\"],[-18.5959,-41.4889,\"São Félix de Minas\",\"MG\"],[-11.615,-50.6706,\"São Félix do Araguaia\",\"MT\"],[-13.4019,-44.1837,\"São Félix do Coribe\",\"BA\"],[-5.9348,-42.1172,\"São Félix do Piauí\",\"PI\"],[-10.1615,-46.6618,\"São Félix do Tocantins\",\"TO\"],[-6.6425,-51.9904,\"São Félix do Xingu\",\"PA\"],[-15.9514,-44.8593,\"São Francisco\",\"MG\"],[-8.236,-41.6873,\"São Francisco de Assis do Piauí\",\"PI\"],[-15.9256,-49.2605,\"São Francisco de Goiás\",\"GO\"],[-5.1258,-47.389,\"São Francisco do Brejão\",\"MA\"],[-6.2516,-42.8668,\"São Francisco do Maranhão\",\"MA\"],[-1.1696,-47.7917,\"São Francisco do Pará\",\"PA\"],[-7.2463,-42.541,\"São Francisco do Piauí\",\"PI\"],[-11.2175,-41.8843,\"São Gabriel\",\"BA\"],[-19.3889,-54.5507,\"São Gabriel do Oeste\",\"MS\"],[-18.8411,-42.2867,\"São Geraldo da Piedade\",\"MG\"],[-6.3947,-48.5592,\"São Geraldo do Araguaia\",\"PA\"],[-18.9097,-41.363,\"São Geraldo do Baixio\",\"MG\"],[-18.3315,-45.8265,\"São Gonçalo do Abaeté\",\"MG\"],[-10.0319,-45.3092,\"São Gonçalo do Gurguéia\",\"PI\"],[-5.9939,-42.7095,\"São Gonçalo do Piauí\",\"PI\"],[-18.0025,-43.3854,\"São Gonçalo do Rio Preto\",\"MG\"],[-19.3087,-46.0465,\"São Gotardo\",\"MG\"],[-2.954,-44.7953,\"São João Batista\",\"MA\"],[-14.7048,-47.5228,\"São João d'Aliança\",\"GO\"],[-6.812,-41.3415,\"São João da Canabrava\",\"PI\"],[-3.955,-41.2569,\"São João da Fronteira\",\"PI\"],[-16.8455,-44.3507,\"São João da Lagoa\",\"MG\"],[-16.8126,-50.4092,\"São João da Paraúna\",\"GO\"],[-0.8579,-47.918,\"São João da Ponta\",\"PA\"],[-15.9271,-44.0096,\"São João da Ponte\",\"MG\"],[-5.5108,-41.8923,\"São João da Serra\",\"PI\"],[-6.9408,-41.8889,\"São João da Varjota\",\"PI\"],[-14.8859,-44.0922,\"São João das Missões\",\"MG\"],[-0.7802,-47.181,\"São João de Pirabas\",\"PA\"],[-5.3633,-48.7926,\"São João do Araguaia\",\"PA\"],[-3.8186,-42.4459,\"São João do Arraial\",\"PI\"],[-3.5503,-46.2507,\"São João do Carú\",\"MA\"],[-18.723,-41.1628,\"São João do Manteninha\",\"MG\"],[-19.3384,-42.1575,\"São João do Oriente\",\"MG\"],[-16.5373,-44.5134,\"São João do Pacuí\",\"MG\"],[-15.3168,-42.0213,\"São João do Paraíso\",\"MG\"],[-6.4563,-47.0594,\"São João do Paraíso\",\"MA\"],[-8.3547,-42.2559,\"São João do Piauí\",\"PI\"],[-5.1082,-43.8163,\"São João do Soter\",\"MA\"],[-6.4934,-43.7036,\"São João dos Patos\",\"MA\"],[-18.548,-42.7655,\"São João Evangelista\",\"MG\"],[-18.3243,-42.1431,\"São José da Safira\",\"MG\"],[-2.547,-44.0597,\"São José de Ribamar\",\"MA\"],[-3.8141,-41.8308,\"São José do Divino\",\"PI\"],[-18.4793,-41.3907,\"São José do Divino\",\"MG\"],[-18.281,-42.6729,\"São José do Jacuri\",\"MG\"],[-7.4855,-42.5672,\"São José do Peixe\",\"PI\"],[-6.8719,-41.4731,\"São José do Piauí\",\"PI\"],[-16.4549,-54.2487,\"São José do Povo\",\"MT\"],[-13.4398,-56.7218,\"São José do Rio Claro\",\"MT\"],[-10.7982,-52.7486,\"São José do Xingu\",\"MT\"],[-5.0549,-44.5809,\"São José dos Basílios\",\"MA\"],[-9.1646,-42.5496,\"São Lourenço do Piauí\",\"PI\"],[-2.5387,-44.2825,\"São Luís\",\"MA\"],[-16.5211,-50.3726,\"São Luís de Montes Belos\",\"GO\"],[-6.8194,-41.3175,\"São Luis do Piauí\",\"PI\"],[-4.3854,-44.6654,\"São Luís Gonzaga do Maranhão\",\"MA\"],[-14.8608,-49.3285,\"São Luiz do Norte\",\"GO\"],[-4.0374,-44.4707,\"São Mateus do Maranhão\",\"MA\"],[-5.8565,-42.1934,\"São Miguel da Baixa Grande\",\"PI\"],[-13.2731,-50.1634,\"São Miguel do Araguaia\",\"GO\"],[-7.5971,-42.3676,\"São Miguel do Fidalgo\",\"PI\"],[-1.6131,-47.4784,\"São Miguel do Guamá\",\"PA\"],[-17.0582,-48.662,\"São Miguel do Passa Quatro\",\"GO\"],[-5.4973,-41.3165,\"São Miguel do Tapuio\",\"PI\"],[-5.563,-47.5743,\"São Miguel do Tocantins\",\"TO\"],[-15.35,-49.818,\"São Patrício\",\"GO\"],[-5.0847,-48.4291,\"São Pedro da Água Branca\",\"MA\"],[-16.0109,-54.9176,\"São Pedro da Cipa\",\"MT\"],[-5.9208,-42.7192,\"São Pedro do Piauí\",\"PI\"],[-18.3609,-42.5981,\"São Pedro do Suaçuí\",\"MG\"],[-6.8239,-46.5319,\"São Pedro dos Crentes\",\"MA\"],[-7.0218,-45.4809,\"São Raimundo das Mangabeiras\",\"MA\"],[-5.1105,-45.0696,\"São Raimundo do Doca Bezerra\",\"MA\"],[-9.0124,-42.6987,\"São Raimundo Nonato\",\"PI\"],[-5.0231,-45.001,\"São Roberto\",\"MA\"],[-16.3641,-45.0749,\"São Romão\",\"MG\"],[-12.7458,-48.2352,\"São Salvador do Tocantins\",\"TO\"],[-1.716,-49.5249,\"São Sebastião da Boa Vista\",\"PA\"],[-18.0873,-42.5659,\"São Sebastião do Maranhão\",\"MG\"],[-19.2959,-43.1757,\"São Sebastião do Rio Preto\",\"MG\"],[-5.2613,-48.2021,\"São Sebastião do Tocantins\",\"TO\"],[-18.996,-50.547,\"São Simão\",\"GO\"],[-11.9743,-48.2353,\"São Valério\",\"TO\"],[-2.8949,-44.8681,\"São Vicente Ferrer\",\"MA\"],[-6.9402,-49.6834,\"Sapucaia\",\"PA\"],[-18.7828,-42.3629,\"Sardoá\",\"MG\"],[-4.0491,-45.2457,\"Satubinha\",\"MA\"],[-12.4169,-41.7722,\"Seabra\",\"BA\"],[-10.817,-44.8337,\"Sebastião Barros\",\"PI\"],[-14.571,-42.9434,\"Sebastião Laranjeiras\",\"BA\"],[-7.568,-44.06,\"Sebastião Leal\",\"PI\"],[-5.251,-44.0533,\"Senador Alexandre Costa\",\"MA\"],[-16.7084,-49.0914,\"Senador Canedo\",\"GO\"],[-4.3124,-51.5764,\"Senador José Porfírio\",\"PA\"],[-5.4461,-47.2959,\"Senador La Rocque\",\"MA\"],[-17.9465,-43.2172,\"Senador Modestino Gonçalves\",\"MG\"],[-18.8909,-43.0799,\"Senhora do Porto\",\"MG\"],[-9.7414,-41.8786,\"Sento Sé\",\"BA\"],[-18.3602,-43.1675,\"Serra Azul de Minas\",\"MG\"],[-19.4447,-45.795,\"Serra da Saudade\",\"MG\"],[-13.5659,-43.5929,\"Serra do Ramalho\",\"BA\"],[-19.1083,-46.6961,\"Serra do Salitre\",\"MG\"],[-12.759,-43.9504,\"Serra Dourada\",\"BA\"],[-12.0896,-51.4025,\"Serra Nova Dourada\",\"MT\"],[-1.8523,-45.1207,\"Serrano do Maranhão\",\"MA\"],[-18.3067,-51.9586,\"Serranópolis\",\"GO\"],[-15.8176,-42.8732,\"Serranópolis de Minas\",\"MG\"],[-18.5991,-43.3744,\"Serro\",\"MG\"],[-19.4569,-44.2413,\"Sete Lagoas\",\"MG\"],[-17.6002,-42.1587,\"Setubinha\",\"MG\"],[-4.9166,-41.7311,\"Sigefredo Pacheco\",\"PI\"],[-16.66,-48.6083,\"Silvânia\",\"GO\"],[-11.1471,-48.1694,\"Silvanópolis\",\"TO\"],[-14.4644,-46.4847,\"Simolândia\",\"GO\"],[-7.8529,-41.9075,\"Simplício Mendes\",\"PI\"],[-11.8604,-55.5091,\"Sinop\",\"MT\"],[-14.7992,-46.2506,\"Sítio d'Abadia\",\"GO\"],[-13.0801,-43.4689,\"Sítio do Mato\",\"BA\"],[-5.876,-46.7033,\"Sítio Novo\",\"MA\"],[-5.6012,-47.6381,\"Sítio Novo do Tocantins\",\"TO\"],[-19.2345,-42.0998,\"Sobrália\",\"MG\"],[-7.8677,-42.4922,\"Socorro do Piauí\",\"PI\"],[-17.5698,-54.7551,\"Sonora\",\"MS\"],[-12.5425,-55.7211,\"Sorriso\",\"MT\"],[-0.7303,-48.5015,\"Soure\",\"PA\"],[-12.088,-41.6427,\"Souto Soares\",\"BA\"],[-11.993,-48.9685,\"Sucupira\",\"TO\"],[-6.4784,-44.1919,\"Sucupira do Norte\",\"MA\"],[-6.4086,-43.5455,\"Sucupira do Riachão\",\"MA\"],[-7.0369,-41.3767,\"Sussuapara\",\"PI\"],[-11.3007,-56.8312,\"Tabaporã\",\"MT\"],[-12.7026,-44.0075,\"Tabocas do Brejo Velho\",\"BA\"],[-12.4026,-46.437,\"Taguatinga\",\"TO\"],[-2.9458,-48.9489,\"Tailândia\",\"PA\"],[-15.8106,-42.2259,\"Taiobeiras\",\"MG\"],[-12.1873,-46.9797,\"Taipas do Tocantins\",\"TO\"],[-12.7949,-49.0896,\"Talismã\",\"TO\"],[-8.4094,-42.9211,\"Tamboril do Piauí\",\"PI\"],[-14.0197,-41.2473,\"Tanhaçu\",\"BA\"],[-6.5979,-42.2795,\"Tanque do Piauí\",\"PI\"],[-13.5485,-42.4934,\"Tanque Novo\",\"BA\"],[-12.695,-56.5178,\"Tapurah\",\"MT\"],[-16.0521,-49.6039,\"Taquaral de Goiás\",\"GO\"],[-19.2835,-42.0097,\"Tarumirim\",\"MG\"],[-8.4662,-45.7536,\"Tasso Fragoso\",\"MA\"],[-17.8595,-41.5087,\"Teófilo Otoni\",\"MG\"],[-5.0919,-42.8034,\"Teresina\",\"PI\"],[-13.7801,-47.2659,\"Teresina de Goiás\",\"GO\"],[-16.3945,-49.0797,\"Terezópolis de Goiás\",\"GO\"],[-1.0296,-47.9004,\"Terra Alta\",\"PA\"],[-10.517,-55.231,\"Terra Nova do Norte\",\"MT\"],[-2.1044,-56.4877,\"Terra Santa\",\"PA\"],[-16.0809,-53.559,\"Tesouro\",\"MT\"],[-4.256,-43.932,\"Timbiras\",\"MA\"],[-5.0977,-42.8329,\"Timon\",\"MA\"],[-19.0037,-45.9626,\"Tiros\",\"MG\"],[-9.5632,-48.3741,\"Tocantínia\",\"TO\"],[-6.3245,-47.4224,\"Tocantinópolis\",\"TO\"],[-2.413,-48.1415,\"Tomé-Açu\",\"PA\"],[-16.2006,-52.5571,\"Torixoréu\",\"MT\"],[-1.0765,-46.9031,\"Tracuateua\",\"PA\"],[-4.5735,-55.9429,\"Trairão\",\"PA\"],[-14.9736,-41.4142,\"Tremedal\",\"BA\"],[-18.2048,-45.2473,\"Três Marias\",\"MG\"],[-18.3539,-47.776,\"Três Ranchos\",\"GO\"],[-16.6517,-49.4927,\"Trindade\",\"GO\"],[-4.538,-44.628,\"Trizidela do Vale\",\"MA\"],[-13.5079,-48.7417,\"Trombas\",\"GO\"],[-6.7469,-51.1626,\"Tucumã\",\"PA\"],[-3.7657,-49.6773,\"Tucuruí\",\"PA\"],[-3.6736,-45.6238,\"Tufilândia\",\"MA\"],[-18.9844,-41.6527,\"Tumiritinga\",\"MG\"],[-5.2548,-44.6444,\"Tuntum\",\"MA\"],[-18.5866,-48.6985,\"Tupaciguara\",\"MG\"],[-8.9717,-48.1883,\"Tupirama\",\"TO\"],[-8.3939,-48.1277,\"Tupiratins\",\"TO\"],[-1.6589,-45.3798,\"Turiaçu\",\"MA\"],[-2.2164,-45.3044,\"Turilândia\",\"MA\"],[-17.2828,-42.7285,\"Turmalina\",\"MG\"],[-16.6125,-50.1369,\"Turvânia\",\"GO\"],[-17.8502,-50.3024,\"Turvelândia\",\"GO\"],[-2.7614,-42.2755,\"Tutóia\",\"MA\"],[-16.2885,-44.7783,\"Ubaí\",\"MG\"],[-18.9141,-48.2749,\"Uberlândia\",\"MG\"],[-11.3394,-42.1354,\"Uibaí\",\"BA\"],[-14.2835,-49.9201,\"Uirapuru\",\"GO\"],[-3.7501,-47.4892,\"Ulianópolis\",\"PA\"],[-10.7339,-41.3234,\"Umburanas\",\"BA\"],[-16.3592,-46.9022,\"Unaí\",\"MG\"],[-4.5857,-42.8583,\"União\",\"PI\"],[-11.5308,-54.3616,\"União do Sul\",\"MT\"],[-14.7678,-42.6498,\"Urandi\",\"BA\"],[-3.2064,-43.3878,\"Urbano Santos\",\"MA\"],[-14.5238,-49.1396,\"Uruaçu\",\"GO\"],[-15.4993,-49.6861,\"Uruana\",\"GO\"],[-16.0634,-46.2443,\"Uruana de Minas\",\"MG\"],[-3.7152,-53.7396,\"Uruará\",\"PA\"],[-7.2394,-44.5577,\"Uruçuí\",\"PI\"],[-16.1244,-45.7352,\"Urucuia\",\"MG\"],[-17.4651,-48.2015,\"Urutaí\",\"GO\"],[-12.0783,-41.0954,\"Utinga\",\"BA\"],[-6.403,-41.7375,\"Valença do Piauí\",\"PI\"],[-16.0651,-47.9757,\"Valparaíso de Goiás\",\"GO\"],[-3.5364,-43.917,\"Vargem Grande\",\"MA\"],[-15.3987,-42.3085,\"Vargem Grande do Rio Pardo\",\"MG\"],[-17.0471,-49.6312,\"Varjão\",\"GO\"],[-18.3741,-46.0313,\"Varjão de Minas\",\"MG\"],[-9.238,-42.9692,\"Várzea Branca\",\"PI\"],[-17.5944,-44.7226,\"Várzea da Palma\",\"MG\"],[-6.549,-42.248,\"Várzea Grande\",\"PI\"],[-15.6458,-56.1322,\"Várzea Grande\",\"MT\"],[-15.6992,-44.0278,\"Varzelândia\",\"MG\"],[-17.9827,-46.9088,\"Vazante\",\"MG\"],[-12.3017,-55.3045,\"Vera\",\"MT\"],[-7.5975,-41.4673,\"Vera Mendes\",\"PI\"],[-15.5845,-43.6121,\"Verdelândia\",\"MG\"],[-17.3974,-42.7307,\"Veredinha\",\"MG\"],[-3.2045,-44.9912,\"Viana\",\"MA\"],[-16.7405,-48.5159,\"Vianópolis\",\"GO\"],[-17.7322,-49.8047,\"Vicentinópolis\",\"GO\"],[-3.5667,-41.0916,\"Viçosa do Ceará\",\"CE\"],[-0.8612,-48.1386,\"Vigia\",\"PA\"],[-15.0387,-47.052,\"Vila Boa\",\"GO\"],[-5.1889,-48.1336,\"Vila Nova dos Martírios\",\"MA\"],[-15.4542,-48.8819,\"Vila Propício\",\"GO\"],[-10.0137,-51.1186,\"Vila Rica\",\"MT\"],[-16.807,-42.3431,\"Virgem da Lapa\",\"MG\"],[-18.8154,-42.7015,\"Virginópolis\",\"MG\"],[-18.4738,-42.3067,\"Virgolândia\",\"MG\"],[-1.1912,-46.1399,\"Viseu\",\"PA\"],[-0.938,-52.424,\"Vitória do Jari\",\"AP\"],[-3.4512,-44.8643,\"Vitória do Mearim\",\"MA\"],[-2.8792,-52.0088,\"Vitória do Xingu\",\"PA\"],[-4.2818,-45.2505,\"Vitorino Freire\",\"MA\"],[-12.2819,-41.1715,\"Wagner\",\"BA\"],[-7.2315,-41.905,\"Wall Ferraz\",\"PI\"],[-6.8527,-47.9601,\"Wanderlândia\",\"TO\"],[-12.1144,-43.8958,\"Wanderley\",\"BA\"],[-6.4141,-48.532,\"Xambioá\",\"TO\"],[-7.0983,-49.9437,\"Xinguara\",\"PA\"],[-10.823,-42.7245,\"Xique-Xique\",\"BA\"],[-3.2701,-45.6553,\"Zé Doca\",\"MA\"],[-13.5067,-55.1486,\"Boa Esperança do Norte\",\"MT\"]];\n\n// Encontrar município mais próximo por distância euclidiana\nfunction findCity(lat, lng) {\n  let bestD = 999999, best = null;\n  for (const m of MUNIS) {\n    const d = (m[0]-lat)*(m[0]-lat) + (m[1]-lng)*(m[1]-lng);\n    if (d < bestD) { bestD = d; best = m; }\n  }\n  return best ? { city: best[2], state: best[3] } : { city: '', state: '' };\n}\n\n// === TERRITÓRIO DINÂMICO (API territory-farm) ===\nlet TERRITORY_NAME_MAP = {};\ntry { TERRITORY_NAME_MAP = JSON.parse(staticData.territories || '{}'); } catch(e) {}\n\n\n// === STATUS PT-BR ===\nconst statusPT = {\n  'deployed': 'Em andamento',\n  'cancelled': 'Cancelado',\n  'concluded': 'Concluído',\n  'planned': 'Planejado'\n};\n\nconst plantSystemPT = {\n  'direct': 'Direta',\n  'conventional': 'Convencional',\n  'minimum': 'Mínimo'\n};\n\n// === LOOKUP: FAZENDA ===\nconst fazMap = {};\nfor (const f of fazendas) {\n  if (f.id_fazenda) fazMap[String(f.id_fazenda)] = f;\n}\n\n// === LOOKUP: VARIEDADE ===\nconst varMap = {};\nfor (const v of variedades) {\n  if (v.id_variedade) varMap[String(v.id_variedade)] = v;\n}\n\n// === PROCESSAR AVALIAÇÕES (com coordenadas) ===\nconst evalMap = {};\nconst coordMap = {}; // competitionId -> {lat, lng}\n\nfor (const ev of evaluations) {\n  const compId = ev.competitionId ?? '';\n  if (!compId || !ev.data) continue;\n  for (const d of ev.data) {\n    const cpId = d.cultivarCpId ?? '';\n    const key = compId + '_' + cpId;\n    let altura = '', pmg = '';\n    if (d.items && d.items[0] && d.items[0].others) {\n      for (const m of d.items[0].others) {\n        const samples = (m.sample || [])\n          .filter(s => s !== null && s !== '')\n          .map(Number)\n          .filter(n => !isNaN(n));\n        const avg = samples.length\n          ? (samples.reduce((a, b) => a + b, 0) / samples.length).toFixed(2)\n          : '';\n        if (m.name && m.name.toLowerCase().includes('altura')) altura = avg;\n        if (m.name && m.name.toUpperCase().includes('PMG')) pmg = avg;\n      }\n    }\n\n    // Extrair coordenadas da media (primeira disponível)\n    if (!coordMap[compId] && d.media && Array.isArray(d.media)) {\n      for (const media of d.media) {\n        if (media.point && media.point.coordinates && media.point.coordinates.length === 2) {\n          coordMap[compId] = {\n            lat: media.point.coordinates[0],\n            lng: media.point.coordinates[1]\n          };\n          break;\n        }\n      }\n    }\n\n    if (!evalMap[key]) {\n      evalMap[key] = { altura, pmg, evalId: ev.evaluationId || '', evalFieldId: d.evaluationFieldId || '' };\n    } else {\n      if (altura) evalMap[key].altura = altura;\n      if (pmg) evalMap[key].pmg = pmg;\n    }\n  }\n}\n\n// === MONTAR RESULTADO ===\nconst result = [];\n\nfor (const c of competitions) {\n  const compId     = c.competitionId || '';\n  const tipo       = c.type?.name || '';\n  const status     = statusPT[c.status] || c.status || '';\n  const farmId     = c.farm?.id || '';\n  const farmName   = c.farm?.name || '';\n  const owner      = c.farm?.owner || '';\n  const safra      = c.crop?.code || '';\n  const periodo    = c.crop?.period || '';\n  const cultura    = c.culture?.name || '';\n  const repTecnico = c.manager?.name || '';\n  const protocolo  = c.protocol?.name || '';\n\n  // JOIN FAZENDA -> cidade, estado (da API fazendas)\n  const faz      = fazMap[String(farmId)] || {};\n  let cidade     = faz.municipio || '';\n  let estado     = faz.estado || '';\n\n  // GEOCODIFICAÇÃO: se não tem cidade da API, usa coordenadas\n  const coord = coordMap[compId] || null;\n  const lat = coord ? coord.lat : '';\n  const lng = coord ? coord.lng : '';\n  if ((!cidade || !estado) && coord) {\n    const geo = findCity(coord.lat, coord.lng);\n    cidade = geo.city;\n    estado = geo.state;\n  }\n\n  // TERRITÓRIO\n  const territorio = TERRITORY_NAME_MAP[farmName] || '';\n\n  const cultivares = c.cultivar || [];\n\n  if (cultivares.length > 0) {\n    for (const cv of cultivares) {\n      const cultivarCpId = cv.cultivarCpId || '';\n      const cultivarId   = cv.cultivarId || '';\n      const cultivarName = cv.name || '';\n      const tipoCultivar = cv.type?.name || '';\n\n      const sistPlantio = plantSystemPT[cv.planting?.system] || cv.planting?.system || '';\n      const irrigado    = cv.planting?.irrigated === 1 ? 'Sim'\n                        : cv.planting?.irrigated === 0 ? 'Não' : '';\n\n      const prodLiq    = cv.harvest?.yield ?? '';\n      const areaHa     = cv.field?.size ?? '';\n      const popFinal   = cv.harvest?.population ?? '';\n\n      // JOIN VARIEDADE\n      const vari     = varMap[String(cultivarId)] || {};\n      const gm       = vari.grupo_maturacao ?? '';\n      const genetica = vari.descricao || '';\n\n      // JOIN AVALIAÇÃO\n      const ev = evalMap[compId + '_' + cultivarCpId] || {};\n\n      result.push({\n        'ID Campo': compId,\n        'Tipo': tipo,\n        'Status': status,\n        'ID da Fazenda': farmId,\n        'Nome da Fazenda': farmName,\n        'Proprietário': owner,\n        'Safra': safra,\n        'Período': periodo,\n        'Cultura': cultura,\n        'Representante Técnico': repTecnico,\n        'Protocolo': protocolo,\n        'Sistema de plantio': sistPlantio,\n        'Irrigado': irrigado,\n        'ID de Tratamento': cultivarCpId,\n        'ID Cultivar': cultivarId,\n        'Cultivar': cultivarName,\n        'Produtividade líquida': prodLiq,\n        'GM ou RMG': gm,\n        'Área colhida Ha': areaHa,\n        'População final': popFinal,\n        'Latitude': lat,\n        'Longitude': lng,\n        'Cidade': cidade,\n        'Estado': estado,\n        'Tipo de cultivar': tipoCultivar,\n        'Território': territorio,\n        'Genética Cultivar': genetica,\n        'Altura da Planta (cm)': ev.altura || '',\n        'PMG (g)': ev.pmg || '',\n        'ID Avaliação': ev.evalId || '',\n        'ID Campo Avaliado': ev.evalFieldId || ''\n      });\n    }\n  } else {\n    result.push({\n      'ID Campo': compId,\n      'Tipo': tipo,\n      'Status': status,\n      'ID da Fazenda': farmId,\n      'Nome da Fazenda': farmName,\n      'Proprietário': owner,\n      'Safra': safra,\n      'Período': periodo,\n      'Cultura': cultura,\n      'Representante Técnico': repTecnico,\n      'Protocolo': protocolo,\n      'Sistema de plantio': '',\n      'Irrigado': '',\n      'ID de Tratamento': '',\n      'ID Cultivar': '',\n      'Cultivar': '',\n      'Produtividade líquida': '',\n      'GM ou RMG': '',\n      'Área colhida Ha': '',\n      'População final': '',\n      'Latitude': lat,\n      'Longitude': lng,\n      'Cidade': cidade,\n      'Estado': estado,\n      'Tipo de cultivar': '',\n      'Território': territorio,\n      'Genética Cultivar': '',\n      'Altura da Planta (cm)': '',\n      'PMG (g)': '',\n      'ID Avaliação': '',\n      'ID Campo Avaliado': ''\n    });\n  }\n}\n\n// Limpar\ndelete staticData.competitions;\ndelete staticData.fazendas;\ndelete staticData.variedades;\ndelete staticData.evaluations;\ndelete staticData.territories;\n\nif (result.length === 0) {\n  return [{ json: {\n    AVISO: 'Nenhum dado encontrado.',\n    debug: { competitions: competitions.length, fazendas: fazendas.length, variedades: variedades.length, evaluations: evaluations.length }\n  }}];\n}\n\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        400
+      ],
+      "id": "node-join-all",
+      "name": "9 JOIN Final (31 colunas)"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {
+          "sheetName": "Competições e Avaliações"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1520,
+        400
+      ],
+      "id": "cb3f9419-1026-48ca-b591-43cc8fb731d5",
+      "name": "10 Convert to Excel"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Renomear arquivo para relatorio-avaliacoes-DD-MM-YYYY.xlsx\nconst items = $input.all();\nfor (const item of items) {\n  if (item.binary && item.binary.data) {\n    const now = new Date();\n    const dd = String(now.getDate()).padStart(2, '0');\n    const mm = String(now.getMonth() + 1).padStart(2, '0');\n    const yyyy = now.getFullYear();\n    item.binary.data.fileName = `relatorio-avaliacoes-${dd}-${mm}-${yyyy}.xlsx`;\n  }\n}\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        400
+      ],
+      "id": "node-rename-file",
+      "name": "10b Renomear Arquivo"
+    },
+    {
+      "parameters": {
+        "fromEmail": "workflow@gcsagro.com.br",
+        "toEmail": "taiuan.almeida@latitudegenetica.com",
+        "subject": "📊 Relatório de Avaliações - Latitude Genética",
+        "html": "<div style=\"font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e8e8e8;\">\n  <div style=\"background-color: #464646; padding: 28px 24px; text-align: center;\">\n    <img src=\"https://raw.githubusercontent.com/leonardoalvesnti/relatorio-avaliacoes-tbdc/main/assets/logo-latitude.png\" alt=\"Latitude\" style=\"width: 48px; height: auto; margin-bottom: 12px;\">\n    <h1 style=\"color: #ffffff; margin: 0; font-size: 22px; font-weight: 600; letter-spacing: 0.5px;\">Relatório de Avaliações</h1>\n    <p style=\"color: #00BB31; margin: 6px 0 0; font-size: 13px; font-weight: 600;\">Competições de Cultivares — Latitude Genética</p>\n  </div>\n  <div style=\"padding: 24px;\">\n    <p style=\"color: #464646; font-size: 14px; line-height: 1.6; margin-top: 0;\">Olá,</p>\n    <p style=\"color: #464646; font-size: 14px; line-height: 1.6;\">Segue em anexo o relatório consolidado com dados de <strong>produtividade, PMG, altura da planta</strong> e demais métricas de avaliação, vinculados por campo e cultivar.</p>\n    <div style=\"background-color: #f8fdf8; border-left: 4px solid #00BB31; padding: 12px 16px; margin: 20px 0;\">\n      <p style=\"margin: 0; color: #464646; font-size: 13px;\"><strong>Safra:</strong> 2025/2026 &nbsp;&nbsp;|&nbsp;&nbsp; <strong>Cultura:</strong> Soja &nbsp;&nbsp;|&nbsp;&nbsp; <strong>31 colunas</strong></p>\n    </div>\n    <p style=\"color: #999; font-size: 11px; margin-top: 24px; padding-top: 16px; border-top: 1px solid #eee;\">Envio automático — segundas e quintas às 08:30<br>Latitude Genética S/A • latitudegenetica.com</p>\n  </div>\n</div>",
+        "options": {
+          "attachments": "data",
+          "ccEmail": "pedro.pontes@gcsagro.com.br; leonardo.alves@gcsagro.com.br;luciano.guimaraes@gcsagro.com.br;"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1900,
+        400
+      ],
+      "id": "7ed1b377-0884-475c-a298-a346dcb7aacc",
+      "name": "11 Send Email",
+      "webhookId": "e22414a6-e548-4ca5-92e2-cd9a76a6fd29",
+      "credentials": {
+        "smtp": {
+          "id": "opvAQpWPvz4YEfQq",
+          "name": "SMTP Workflow@gcsagro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api-external.tbdc.com.br/territory-farm",
+        "authentication": "genericCredentialType",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "start_date",
+              "value": "={{ $now.minus({days: 90}).toFormat('yyyy-MM-dd') }}"
+            },
+            {
+              "name": "end_date",
+              "value": "={{ $now.toFormat('yyyy-MM-dd') }}"
+            },
+            {
+              "name": "sort",
+              "value": "farmId"
+            },
+            {
+              "name": "order",
+              "value": "desc"
+            },
+            {
+              "name": "pagination_limit",
+              "value": "500"
+            },
+            {
+              "name": "pagination_page",
+              "value": "1"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "pagination": {
+            "paginationMode": "updateAParameterInEachRequest",
+            "parameters": {
+              "parameters": [
+                {
+                  "type": "queryParameter",
+                  "name": "pagination_page",
+                  "value": "={{ $pageCount + 1 }}"
+                }
+              ]
+            },
+            "paginationCompleteWhen": "other",
+            "completeExpression": "={{ $response.body.rows.length === 0 }}",
+            "limitPagesFetched": true,
+            "maxRequests": 30
+          }
+        },
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1280,
+        600
+      ],
+      "id": "node-get-territory",
+      "name": "GET Territory Farm",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CRIAR_CREDENTIAL_APIKEY",
+          "name": "TBDC API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nconst items = $input.all();\nlet allRows = [];\nfor (const item of items) {\n  const j = item.json;\n  if (j.rows && Array.isArray(j.rows)) allRows = allRows.concat(j.rows);\n  else if (j.farm && j.territory) allRows.push(j);\n}\n// Build farm name -> territory map\nconst terrMap = {};\nfor (const row of allRows) {\n  const farmName = (row.farm && row.farm.name) ? row.farm.name.trim() : '';\n  const territory = (row.territory && row.territory.name) ? row.territory.name : '';\n  if (farmName && territory) terrMap[farmName] = territory;\n}\nstaticData.territories = JSON.stringify(terrMap);\nreturn [{json: {step: '5_territories', count: Object.keys(terrMap).length}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1520,
+        600
+      ],
+      "id": "node-store-territory",
+      "name": "Store Territory"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking 'Execute workflow'": {
+      "main": [
+        [
+          {
+            "node": "1 GET Competitions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "1 GET Competitions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1 GET Competitions": {
+      "main": [
+        [
+          {
+            "node": "2 Store Competitions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2 Store Competitions": {
+      "main": [
+        [
+          {
+            "node": "3 GET Fazendas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3 GET Fazendas": {
+      "main": [
+        [
+          {
+            "node": "4 Store Fazendas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4 Store Fazendas": {
+      "main": [
+        [
+          {
+            "node": "5 GET Variedades",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5 GET Variedades": {
+      "main": [
+        [
+          {
+            "node": "6 Store Variedades",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "6 Store Variedades": {
+      "main": [
+        [
+          {
+            "node": "7 GET Evaluations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "7 GET Evaluations": {
+      "main": [
+        [
+          {
+            "node": "8 Store Evaluations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "8 Store Evaluations": {
+      "main": [
+        [
+          {
+            "node": "GET Territory Farm",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "9 JOIN Final (31 colunas)": {
+      "main": [
+        [
+          {
+            "node": "10 Convert to Excel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "10 Convert to Excel": {
+      "main": [
+        [
+          {
+            "node": "10b Renomear Arquivo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "10b Renomear Arquivo": {
+      "main": [
+        [
+          {
+            "node": "11 Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Territory Farm": {
+      "main": [
+        [
+          {
+            "node": "Store Territory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Territory": {
+      "main": [
+        [
+          {
+            "node": "9 JOIN Final (31 colunas)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "v3.6-territory-dynamic",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d0a6af64c225ad6d574d25d6592faa46a66c3f434a61b42dde1ad8c93cc3063f"
+  },
+  "id": "evaluation-tbdc-v3",
+  "tags": []
+}

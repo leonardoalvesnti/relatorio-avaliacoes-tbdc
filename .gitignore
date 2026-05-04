@@ -1,0 +1,18 @@
+# Arquivos grandes / temporarios
+*.xlsx
+*.xls
+*.pdf
+
+# Dados sensíveis
+response-*.json
+
+# WhatsApp exports
+WhatsApp Chat*/
+
+# Python
+__pycache__/
+*.pyc
+
+# Temp
+logo_base64.txt
+Evaluation TBDC.json
